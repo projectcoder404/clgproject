@@ -21,8 +21,12 @@
         body {
             font-family: 'Poppins', sans-serif;
             background: #f9f9f9;
+<<<<<<< HEAD
             display: flex;
             flex-direction: column;
+=======
+            zoom: 100%;
+>>>>>>> df3fafe (Modify index.html)
         }
 
 
@@ -33,9 +37,7 @@
         }
 
         .sidebar {
-            width: 18vw;
-            max-width: 280px; 
-            min-width: 220px;
+            width: 280px;
             height: 100vh;
             background: var(--dark-bg);
             padding: 30px 20px;
@@ -89,8 +91,7 @@
 
         .menu-item {
             color: var(--light-text);
-            padding: 1rem 1.5rem;
-            font-size: 1rem;
+            padding: 16px 25px;
             cursor: pointer;
             border-radius: 12px;
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
@@ -168,48 +169,48 @@
             }
     }
 
-    @media screen and (max-width: 992px) {
-        .sidebar {
-            width: 220px; /* Further reduce for smaller screens */
-        }
-        .content-area {
-            margin-left: 220px;
-        }
+@media screen and (max-width: 992px) {
+    .sidebar {
+        width: 220px; /* Further reduce for smaller screens */
     }
+    .content-area {
+        margin-left: 220px;
+    }
+}
 
-    @media screen and (max-width: 768px) {
-        .sidebar {
-            width: 200px; /* Even smaller for tablets */
-            padding: 20px 10px;
-        }
-        .content-area {
-            margin-left: 200px;
-        }
+@media screen and (max-width: 768px) {
+    .sidebar {
+        width: 200px; /* Even smaller for tablets */
+        padding: 20px 10px;
     }
+    .content-area {
+        margin-left: 200px;
+    }
+}
 
-    @media screen and (max-width: 576px) {
-        .sidebar {
-            width: 180px; /* Mobile view */
-            padding: 15px 5px;
-        }
-        .content-area {
-            margin-left: 180px;
-        }
+@media screen and (max-width: 576px) {
+    .sidebar {
+        width: 180px; /* Mobile view */
+        padding: 15px 5px;
     }
+    .content-area {
+        margin-left: 180px;
+    }
+}
 
-    @media screen and (max-width: 450px) {
-        .sidebar {
-            width: 100%; /* Full width for very small screens */
-            height: auto;
-            position: relative;
-            border-radius: 0;
-            transform: translateX(0); /* Ensure it's visible */
-        }
-        .content-area {
-            margin-left: 0;
-            border-radius: 0;
-        }
+@media screen and (max-width: 450px) {
+    .sidebar {
+        width: 100%; /* Full width for very small screens */
+        height: auto;
+        position: relative;
+        border-radius: 0;
+        transform: translateX(0); /* Ensure it's visible */
     }
+    .content-area {
+        margin-left: 0;
+        border-radius: 0;
+    }
+}
 
     </style>
 </head>
