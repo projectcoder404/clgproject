@@ -141,6 +141,59 @@
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
+
+        @media screen and (max-width: 1200px) {
+            .sidebar {
+                width: 240px; /* Reduce width for medium screens */
+            }
+            .content-area {
+                margin-left: 240px;
+            }
+    }
+
+    @media screen and (max-width: 992px) {
+        .sidebar {
+            width: 220px; /* Further reduce for smaller screens */
+        }
+        .content-area {
+            margin-left: 220px;
+        }
+    }
+
+    @media screen and (max-width: 768px) {
+        .sidebar {
+            width: 200px; /* Even smaller for tablets */
+            padding: 20px 10px;
+        }
+        .content-area {
+            margin-left: 200px;
+        }
+    }
+
+    @media screen and (max-width: 576px) {
+        .sidebar {
+            width: 180px; /* Mobile view */
+            padding: 15px 5px;
+        }
+        .content-area {
+            margin-left: 180px;
+        }
+    }
+
+    @media screen and (max-width: 450px) {
+        .sidebar {
+            width: 100%; /* Full width for very small screens */
+            height: auto;
+            position: relative;
+            border-radius: 0;
+            transform: translateX(0); /* Ensure it's visible */
+        }
+        .content-area {
+            margin-left: 0;
+            border-radius: 0;
+        }
+    }
+
     </style>
 </head>
 <body>
