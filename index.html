@@ -11,20 +11,31 @@
             --light-text: #ecf0f1;
         }
 
-        body {
+        html, body {
+            height: 100%;
             margin: 0;
             padding: 0;
+            overflow-x: hidden;
+        }
+
+        body {
             font-family: 'Poppins', sans-serif;
             background: #f9f9f9;
-            zoom: 100%;
+            display: flex;
+            flex-direction: column;
         }
+
 
         .container {
             display: flex;
+            flex: 1;
+            min-height: 100vh;
         }
 
         .sidebar {
-            width: 280px;
+            width: 18vw;
+            max-width: 280px; 
+            min-width: 220px;
             height: 100vh;
             background: var(--dark-bg);
             padding: 30px 20px;
@@ -33,6 +44,8 @@
             box-shadow: 4px 0 25px rgba(0, 0, 0, 0.1);
             transform: translateX(-100%);
             animation: slideIn 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+            overflow-y: scroll;
+            
         }
 
         @keyframes slideIn {
@@ -70,10 +83,14 @@
             flex-direction: column;
             gap: 5px;
         }
+        .menu-list{
+            margin-bottom: 25%;
+        }
 
         .menu-item {
             color: var(--light-text);
-            padding: 16px 25px;
+            padding: 1rem 1.5rem;
+            font-size: 1rem;
             cursor: pointer;
             border-radius: 12px;
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
@@ -84,6 +101,7 @@
             gap: 15px;
             background: rgba(255, 255, 255, 0.05);
             margin: 4px 0;
+            flex-shrink: 0;
         }
 
         .menu-item::before {
@@ -123,9 +141,8 @@
         }
 
         .content-area {
-            flex: 1;
-            margin-left: 280px;
-            padding: 40px;
+            margin-left: 18vw;
+            padding: 2.5rem;
             min-height: 100vh;
             background: white;
             border-radius: 25px 0 0 25px;
@@ -151,48 +168,48 @@
             }
     }
 
-@media screen and (max-width: 992px) {
-    .sidebar {
-        width: 220px; /* Further reduce for smaller screens */
+    @media screen and (max-width: 992px) {
+        .sidebar {
+            width: 220px; /* Further reduce for smaller screens */
+        }
+        .content-area {
+            margin-left: 220px;
+        }
     }
-    .content-area {
-        margin-left: 220px;
-    }
-}
 
-@media screen and (max-width: 768px) {
-    .sidebar {
-        width: 200px; /* Even smaller for tablets */
-        padding: 20px 10px;
+    @media screen and (max-width: 768px) {
+        .sidebar {
+            width: 200px; /* Even smaller for tablets */
+            padding: 20px 10px;
+        }
+        .content-area {
+            margin-left: 200px;
+        }
     }
-    .content-area {
-        margin-left: 200px;
-    }
-}
 
-@media screen and (max-width: 576px) {
-    .sidebar {
-        width: 180px; /* Mobile view */
-        padding: 15px 5px;
+    @media screen and (max-width: 576px) {
+        .sidebar {
+            width: 180px; /* Mobile view */
+            padding: 15px 5px;
+        }
+        .content-area {
+            margin-left: 180px;
+        }
     }
-    .content-area {
-        margin-left: 180px;
-    }
-}
 
-@media screen and (max-width: 450px) {
-    .sidebar {
-        width: 100%; /* Full width for very small screens */
-        height: auto;
-        position: relative;
-        border-radius: 0;
-        transform: translateX(0); /* Ensure it's visible */
+    @media screen and (max-width: 450px) {
+        .sidebar {
+            width: 100%; /* Full width for very small screens */
+            height: auto;
+            position: relative;
+            border-radius: 0;
+            transform: translateX(0); /* Ensure it's visible */
+        }
+        .content-area {
+            margin-left: 0;
+            border-radius: 0;
+        }
     }
-    .content-area {
-        margin-left: 0;
-        border-radius: 0;
-    }
-}
 
     </style>
 </head>
