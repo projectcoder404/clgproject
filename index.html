@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard</title>
+    <style>
+        /* CSS */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            display: flex;
+        }
+
+        .sidebar {
+            width: 250px;
+            height: 100vh;
+            background: #2c3e50;
+            color: white;
+            padding: 20px;
+            position: fixed;
+        }
+
+        .content-area {
+            flex: 1;
+            margin-left: 250px;
+            padding: 20px;
+        }
+
+        .menu-item {
+            padding: 10px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .menu-item:hover {
+            background: #34495e;
+        }
+
+        .active {
+            background: #34495e;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <h2>Menu</h2>
+            <div class="menu-list">
+                <div class="menu-item" data-page="dashboard">Dashboard</div>
+                <div class="menu-item" data-page="programme_code">Programme code</div>
+                <div class="menu-item" data-page="preamble">Preamble</div>
+                <div class="menu-item" data-page="pre_requisite">Pre requisite</div>
+                <div class="menu-item" data-page="course_outcomes">Course Outcomes</div>
+                <div class="menu-item" data-page="mapping_cos_pos">Mapping of COs With POs</div>
+                <div class="menu-item" data-page="mapping_cos_psos">Mapping of COs with PSOs</div>
+                <div class="menu-item" data-page="blooms_taxonomy">Blooms taxonomy</div>
+                <div class="menu-item" data-page="content">Content</div>
+                <div class="menu-item" data-page="chapters">Chapters</div>
+                <div class="menu-item" data-page="text_book">Text Book</div>
+                <div class="menu-item" data-page="reference_book">Reference Book</div>
+                <div class="menu-item" data-page="web_resources">Web Resources</div>
+                <div class="menu-item" data-page="course_designers">Course Designers</div>
+                <div class="menu-item" data-page="department">Department</div>
+                <div class="menu-item" data-page="download_pdf">Download PDF</div>
+            </div>
+        </div>
+
+        <!-- Content Area -->
+        <div class="content-area" id="content-area">
+            <!-- Content will be loaded here -->
+        </div>
+    </div>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Load default content
+            $('#content-area').load('dashboard.php');
+
+            // Handle menu clicks
+            $('.menu-item').click(function() {
+                // Remove active class from all items
+                $('.menu-item').removeClass('active');
+                // Add active class to clicked item
+                $(this).addClass('active');
+                
+                // Get the page name from data attribute
+                const page = $(this).data('page');
+                
+                // Load corresponding content
+                $('#content-area').load(page + '.php');
+            });
+        });
+    </script>
+</body>
+</html>
