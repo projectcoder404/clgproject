@@ -1,17 +1,18 @@
 
+
 <?php
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-// Database connection
+
 require_once '../db_connect.php';
 session_start();
 
-// Handle different actions based on the request
+
 if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action'])) {
     $action = $_GET['action'];
 
-    // Fetch course details for editing
+    
     if ($action === 'fetch_course' && isset($_GET['id'])) {
         $id = intval($_GET['id']);
         $sql = "SELECT * FROM courses WHERE id = $id";
@@ -28,9 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action'])) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Handle form submission for adding a course
     if (isset($_POST['save'])) {
-        // Sanitize inputs
         $course_code = $conn->real_escape_string($_POST['course_code']);
         $course_title = $conn->real_escape_string($_POST['course_title']);
         $category = $conn->real_escape_string($_POST['category']);
@@ -44,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $external = intval($_POST['external']);
         $total = intval($_POST['total']);
 
-        // Insert query
+   
         $sql = "INSERT INTO courses (course_code, course_title, category, l, t, p, credit, year, semester, internal, external, total)
                 VALUES ('$course_code', '$course_title', '$category', $l, $t, $p, $credit, '$year', '$semester', $internal, $external, $total)";
 
@@ -59,9 +58,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit();
     }
 
-    // Handle form submission for updating a course
+    
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update'])) {
-        error_log("Update request received: " . print_r($_POST, true)); // Debugging
+        error_log("Update request received: " . print_r($_POST, true)); 
     
         $id = intval($_POST['id']);
         $course_code = $conn->real_escape_string($_POST['course_code']);
@@ -92,18 +91,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 total = $total
                 WHERE id = $id";
     
-        error_log("Executing SQL Query: " . $sql); // Debugging
+        error_log("Executing SQL Query: " . $sql); 
     
         if ($conn->query($sql)) {
             echo json_encode(['success' => 'Course updated successfully!']);
         } else {
-            error_log("Database Error: " . $conn->error); // Debugging
+            error_log("Database Error: " . $conn->error); 
             echo json_encode(['error' => 'Error: ' . $conn->error]);
         }
         exit();
     }
 
-    // Handle form submission for deleting a course
+    
     if (isset($_POST['delete'])) {
         $id = intval($_POST['id']);
 
@@ -123,7 +122,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Fetch all courses
+
 $result = $conn->query("SELECT * FROM courses");
 ?>
 
@@ -154,13 +153,22 @@ $result = $conn->query("SELECT * FROM courses");
     <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.print.min.js"></script>
 
     <style>
-        /* General Styles */
+        :root {
+            --primary-color: #4361ee;
+            --success-color: #06d6a0;
+            --danger-color: #ef476f;
+            --text-color: #2b2d42;
+            --background-color: #f8f9fa;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
         .content-area {
             margin-left: 19vw;
             margin-right: 2vw;
         }
 
-        /* Modal Styles */
+        #addNewBtn{
+            margin-top: 9rem;
+        }
         .modal {
             display: none;
             position: fixed;
@@ -196,7 +204,7 @@ $result = $conn->query("SELECT * FROM courses");
             color: #000;
         }
 
-        /* Form Grid Layout */
+        
         .form-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -206,7 +214,7 @@ $result = $conn->query("SELECT * FROM courses");
             padding: 40px;
         }
 
-        /* Form Group Styling */
+        
         .form-group {
             margin-bottom: 15px;
         }
@@ -233,62 +241,12 @@ $result = $conn->query("SELECT * FROM courses");
             box-shadow: 0 0 5px rgba(40, 167, 69, 0.5);
         }
 
-        /* Button Styling */
-        .btn-success {
-            background: #28a745;
-            color: white;
-            padding: 10px 25px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: background 0.3s ease;
-            margin-top: 6rem;
-            margin-bottom: 2rem;
-        }
-
-        .btn-success:hover {
-            background: #218838;
-        }
 
         .formbtn {
             margin-top: 1rem;
         }
 
-        /* Table Container */
-        .table-container {
-            margin: 20px;
-            padding: 20px;
-            background: #fff;
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        /* Table Styling */
-        #example {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10rem;
-        }
-
-        #example th,
-        #example td {
-            padding: 12px 15px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-
-        #example th {
-            background-color: #28a745;
-            color: white;
-            font-weight: 600;
-        }
-
-        #example tr:hover {
-            background-color: #f5f5f5;
-        }
-
-        /* Buttons Styling */
+    
         .btn {
             padding: 5px 10px;
             border-radius: 5px;
@@ -317,7 +275,6 @@ $result = $conn->query("SELECT * FROM courses");
             background-color: #c82333;
         }
 
-        /* Responsive Table */
         @media (max-width: 768px) {
             #example {
                 display: block;
@@ -325,22 +282,128 @@ $result = $conn->query("SELECT * FROM courses");
             }
         }
         .dataTables_wrapper .dataTables_filter {
-            margin-bottom: 20px; /* Add gap between search input and table */
+            margin-bottom: 20px; 
         }
 
         .dataTables_wrapper .dataTables_filter input {
-            padding: 8px 12px; /* Add padding to the search input */
-            border: 1px solid #ddd; /* Add a border */
-            border-radius: 5px; /* Rounded corners */
-            font-size: 14px; /* Adjust font size */
-            transition: border-color 0.3s ease; /* Smooth transition */
+            padding: 8px 12px; 
+            border: 1px solid #ddd; 
+            border-radius: 5px; 
+            font-size: 14px; 
+            transition: border-color 0.3s ease; 
         }
 
         .dataTables_wrapper .dataTables_filter input:focus {
-            border-color: #28a745; /* Change border color on focus */
-            outline: none; /* Remove default outline */
-            box-shadow: 0 0 5px rgba(40, 167, 69, 0.5); /* Add a subtle shadow */
+            border-color: #28a745; 
+            outline: none; 
+            box-shadow: 0 0 5px rgba(40, 167, 69, 0.5); 
         }
+
+        .btn-success {
+        background: var(--primary-color);
+        color: white;
+        padding: 0.8rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 500;
+        transition: var(--transition);
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        border: none;
+        cursor: pointer;
+        box-shadow: 0 2px 4px rgba(67, 97, 238, 0.2);
+    }
+
+    .btn-success:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px rgba(67, 97, 238, 0.3);
+        background: #3650c7;
+    }
+
+   
+    .table-container {
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        margin-top: 1.5rem;
+        padding: 1rem;
+    }
+
+    #example {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    #example thead {
+        background: var(--primary-color);
+        color: white;
+    }
+
+    #example th {
+        padding: 1rem;
+        font-weight: 600;
+        text-align: left;
+        border-bottom: none;
+    }
+
+    #example td {
+        padding: 1rem;
+        border-bottom: 1px solid #e9ecef;
+    }
+
+    #example tr:last-child td {
+        border-bottom: none;
+    }
+
+    #example tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+
+    
+    .btn-sm {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.875rem;
+    }
+
+    .btn-primary {
+        background: var(--primary-color);
+        color: white;
+    }
+
+    .btn-danger {
+        background: var(--danger-color);
+        color: white;
+    }
+
+    .dataTables_wrapper .dataTables_filter input {
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        padding: 0.5rem 1rem;
+        transition: var(--transition);
+    }
+
+    .dataTables_wrapper .dataTables_filter input:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+    }
+
+    .dataTables_wrapper .dataTables_paginate .paginate_button {
+        border-radius: 8px !important;
+        margin: 0 0.25rem;
+        transition: var(--transition) !important;
+    }
+
+    .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+        background: var(--primary-color) !important;
+        border-color: var(--primary-color) !important;
+    }
+
+    .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+        background: var(--primary-color) !important;
+        color: white !important;
+    }
     </style>
 </head>
 <body>
@@ -550,48 +613,46 @@ $result = $conn->query("SELECT * FROM courses");
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script>
         $(document).ready(function() {
-            // Initialize DataTable with advanced features
+            
             $('#example').DataTable({
                 dom: '<"top"f>rt<"bottom"lip><"clear">',
                 buttons: [
                     'copy', 'csv', 'excel', 'pdf', 'print'
                 ],
-                responsive: true, // Enable responsive design
-                paging: true, // Enable pagination
-                pageLength: 10, // Set number of rows per page
-                lengthMenu: [10, 25, 50, 100], // Set page length options
-                order: [[0, 'asc']], // Default sorting by the first column
+                responsive: true, 
+                paging: true, 
+                pageLength: 10, 
+                lengthMenu: [10, 25, 50, 100], 
+                order: [[0, 'asc']], 
                 columnDefs: [
-                    { responsivePriority: 1, targets: 0 }, // Make ID column responsive
-                    { responsivePriority: 2, targets: 1 }, // Make Course Code column responsive
-                    { responsivePriority: 3, targets: 2 }, // Make Course Title column responsive
-                    { responsivePriority: 4, targets: -1 } // Make Actions column responsive
+                    { responsivePriority: 1, targets: 0 }, 
+                    { responsivePriority: 2, targets: 1 }, 
+                    { responsivePriority: 3, targets: 2 }, 
+                    { responsivePriority: 4, targets: -1 } 
                 ]
             });
 
-            // Modal handling
+            
             const addModal = $("#addNewModal");
             const editModal = $("#editModal");
             const addBtn = $("#addNewBtn");
             const closeAddModal = $("#closeModal");
             const closeEditModal = $("#closeEditModal");
 
-            // Open Add Modal
+            
             addBtn.on("click", function() {
                 addModal.css("display", "flex");
             });
 
-            // Close Add Modal
+          
             closeAddModal.on("click", function() {
                 addModal.css("display", "none");
             });
 
-            // Close Edit Modal
             closeEditModal.on("click", function() {
                 editModal.css("display", "none");
             });
 
-            // Close modals when clicking outside
             $(window).on("click", function(event) {
                 if (event.target === addModal[0]) {
                     addModal.css("display", "none");
@@ -601,7 +662,6 @@ $result = $conn->query("SELECT * FROM courses");
                 }
             });
 
-            // Real-time calculations for credit and total
             $("#l, #t, #p").on("input", function() {
                 const l = parseFloat($("#l").val()) || 0;
                 const t = parseFloat($("#t").val()) || 0;
@@ -615,11 +675,9 @@ $result = $conn->query("SELECT * FROM courses");
                 $("#total").val(internal + external);
             });
 
-            // Edit Button
             $(document).on("click", ".editBtn", function() {
                 const id = $(this).data("id");
 
-                // Fetch course details via AJAX
                 $.ajax({
                     url: "programme_code.php?action=fetch_course&id=" + id,
                     type: "GET",
@@ -646,25 +704,22 @@ $result = $conn->query("SELECT * FROM courses");
                 });
             });
 
-            // Submit Edit Form
             $("#editCourseForm").on("submit", function(e) {
-                e.preventDefault(); // Prevent form from submitting normally
-                console.log("Update button clicked!"); // Debugging: Check if this message appears in the console
-
+                e.preventDefault(); 
+                console.log("Update button clicked!"); 
                 const formData = $(this).serialize();
-                console.log("Form Data:", formData); // Debugging: Check if data is being collected correctly
-
+                console.log("Form Data:", formData); 
                 $.ajax({
                     url: "programme_code.php",
                     type: "POST",
-                    data: formData + "&update=true", // Ensure 'update' is included in POST data
+                    data: formData + "&update=true", 
                     success: function(response) {
-                        console.log("Server Response:", response); // Debugging: Check server response
+                        console.log("Server Response:", response); 
                         try {
                             const result = JSON.parse(response);
                             if (result.success) {
                                 alert(result.success);
-                                location.reload(); // Reload page after successful update
+                                location.reload(); 
                             } else if (result.error) {
                                 alert(result.error);
                             }

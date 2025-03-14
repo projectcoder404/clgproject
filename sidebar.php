@@ -4,7 +4,7 @@
                 <h2>Course Dashboard</h2>
             </div>
             <div class="menu-list">
-                <!-- Full Menu List -->
+                
                 <div class="menu-item" data-page="dashboard">
                     <i class="fas fa-home"></i>
                     <span>Dashboard</span>
@@ -15,16 +15,17 @@
                 </div>
                 <div class="menu-item" data-page="preamble">
                     <i class="fas fa-file-signature"></i>
-                    <span>Preamble</span>
+                    <a href="/projectcoder/clgproject/menus/preamble.php"><span>Preamble</span></a>
                 </div>
                 <div class="menu-item" data-page="pre_requisite">
                     <i class="fas fa-clipboard-check"></i>
-                    <span>Pre Requisite</span>
+                    <a href="/projectcoder/clgproject/menus/prerequisite.php"> <span>Pre Requisite</span></a>
                 </div>
-                <div class="menu-item" data-page="course_outcomes">
+                <a href="/projectcoder/clgproject/menus/courseoutcomes.php">
+                    <div class="menu-item" data-page="course_outcomes">
                     <i class="fas fa-bullseye"></i>
                     <span>Course Outcomes</span>
-                </div>
+                </div></a>
                 <div class="menu-item" data-page="mapping_cos_pos">
                     <i class="fas fa-sitemap"></i>
                     <span>Mapping COs With POs</span>
