@@ -161,10 +161,10 @@ $result = $conn->query("SELECT * FROM courses");
             --background-color: #f8f9fa;
             --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .content-area {
+        /* .content-area {
             margin-left: 19vw;
             margin-right: 2vw;
-        }
+        } */
 
         #addNewBtn{
             margin-top: 9rem;

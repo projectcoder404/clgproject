@@ -141,10 +141,12 @@ a{
 
 .content-area {
     min-height: 100vh;
-    /* background: white; */
+    
     border-radius: 25px 0 0 25px;
-    /* box-shadow: -4px 0 25px rgba(0, 0, 0, 0.05); */
+    margin-left: 21.6%;
+    margin-right: 15%;
 }
+
 
 
 .content-loading {
