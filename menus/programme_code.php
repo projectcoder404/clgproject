@@ -153,28 +153,14 @@ $result = $conn->query("SELECT * FROM courses");
     <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.print.min.js"></script>
 
     <style>
-        body {
-  zoom: 100%; /* Default zoom */
-}
+            /* Older desktops */
+    @media (max-width: 1280px) { zoom: 50%; }
 
-@media (max-width: 1366px) { /* Example for smaller screens */
-  body {
-    zoom: 90%;
-  }
-}
+    /* Legacy laptops */
+    @media (max-width: 1024px) { /* ... */ }
 
-@media (max-width: 1280px) {
-  body {
-    zoom: 85%;
-  }
-}
-
-@media (max-width: 1024px) {
-  body {
-    zoom: 80%;
-  }
-}
-
+    /* Tablet-sized screens */
+    @media (max-width: 768px) { /* ... */ }
         :root {
             --primary-color: #4361ee;
             --success-color: #06d6a0;
@@ -429,28 +415,6 @@ $result = $conn->query("SELECT * FROM courses");
     </style>
 </head>
 <body>
-
-<script>
-    // Function to adjust zoom based on screen width
-function adjustZoom() {
-    const screenWidth = window.innerWidth;
-    let zoomLevel = "100%";
-
-    if (screenWidth <= 1366) {
-        zoomLevel = "80%"; // Adjust for smaller screens
-    } else {
-        zoomLevel = "100%"; // Default zoom level
-    }
-
-    document.body.style.zoom = zoomLevel;
-}
-
-// Call function on page load and resize
-document.addEventListener("DOMContentLoaded", adjustZoom);
-window.addEventListener("resize", adjustZoom);
-
-</script>
-
     </script>
     <div class="container">
         <?php include('../sidebar.php'); ?>
