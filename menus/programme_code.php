@@ -429,21 +429,27 @@ $result = $conn->query("SELECT * FROM courses");
     </style>
 </head>
 <body>
-    <script>
-        function adjustZoom() {
-        let screenWidth = window.innerWidth;
-        let zoomLevel = 1;
 
-        if (screenWidth < 1400) zoomLevel = 0.9;
-        if (screenWidth < 1200) zoomLevel = 0.8;
-        if (screenWidth < 1024) zoomLevel = 0.7;
-        if (screenWidth < 800) zoomLevel = 0.6;
+<script>
+    // Function to adjust zoom based on screen width
+function adjustZoom() {
+    const screenWidth = window.innerWidth;
+    let zoomLevel = "100%";
 
-        document.querySelector('.container').style.zoom = zoomLevel;
+    if (screenWidth <= 1366) {
+        zoomLevel = "80%"; // Adjust for smaller screens
+    } else {
+        zoomLevel = "100%"; // Default zoom level
     }
 
-    window.addEventListener('resize', adjustZoom);
-    adjustZoom();
+    document.body.style.zoom = zoomLevel;
+}
+
+// Call function on page load and resize
+document.addEventListener("DOMContentLoaded", adjustZoom);
+window.addEventListener("resize", adjustZoom);
+
+</script>
 
     </script>
     <div class="container">
