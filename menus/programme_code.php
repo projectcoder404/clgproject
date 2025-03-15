@@ -158,7 +158,7 @@ $result = $conn->query("SELECT * FROM courses");
 
     @media screen and (max-width: 1366px) {
     body {
-        zoom: 80%;
+        zoom: 58%;
     }
 }
 
