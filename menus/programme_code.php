@@ -328,6 +328,7 @@ $result = $conn->query("SELECT * FROM courses");
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         margin-top: 1.5rem;
         padding: 1rem;
+        width: 99%;
     }
 
     #example {
