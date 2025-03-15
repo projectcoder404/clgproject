@@ -9,18 +9,18 @@
                     <i class="fas fa-home"></i>
                     <span>Dashboard</span>
                 </div>
-                <div class="menu-item" data-page="programme_code">
+                <a href="/projectcoder/clgproject/menus/programme_code.php"><div class="menu-item" data-page="programme_code">
                     <i class="fas fa-barcode"></i>
-                    <a href="/projectcoder/clgproject/menus/programme_code.php"><span>Programme Code</span></a>
-                </div>
-                <div class="menu-item" data-page="preamble">
+                    <span>Programme Code</span>
+                </div></a>
+                <a href="/projectcoder/clgproject/menus/preamble.php"><div class="menu-item" data-page="preamble">
                     <i class="fas fa-file-signature"></i>
-                    <a href="/projectcoder/clgproject/menus/preamble.php"><span>Preamble</span></a>
-                </div>
-                <div class="menu-item" data-page="pre_requisite">
+                    <span>Preamble</span>
+                </div></a>
+                <a href="/projectcoder/clgproject/menus/prerequisite.php"> <div class="menu-item" data-page="pre_requisite">
                     <i class="fas fa-clipboard-check"></i>
-                    <a href="/projectcoder/clgproject/menus/prerequisite.php"> <span>Pre Requisite</span></a>
-                </div>
+                    <span>Pre Requisite</span>
+                </div></a>
                 <a href="/projectcoder/clgproject/menus/courseoutcomes.php">
                     <div class="menu-item" data-page="course_outcomes">
                     <i class="fas fa-bullseye"></i>

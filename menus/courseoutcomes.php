@@ -281,6 +281,11 @@ if ($result) {
                 overflow-x: auto;
             }
         }
+        #addNewBtn {   
+            margin-top: 9rem;   
+            background: #3650c7; 
+            color:white;
+        }
     </style>
 <body>
 
