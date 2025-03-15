@@ -152,234 +152,278 @@ $result = $conn->query("SELECT * FROM courses");
     <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
     <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.print.min.js"></script>
 
-<style>
-    :root {
-    --primary-color: #4361ee;
-    --success-color: #06d6a0;
-    --danger-color: #ef476f;
-    --text-color: #2b2d42;
-    --background-color: #f8f9fa;
-    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --success-color: #06d6a0;
+            --danger-color: #ef476f;
+            --text-color: #2b2d42;
+            --background-color: #f8f9fa;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .content-area {
+            margin-left: 20.3%;
+            margin-right: 15%;
+        }
 
-.content-area {
-    margin-left: 20.3%;
-    margin-right: 15%;
-}
+        #addNewBtn{
+            margin-top: 9rem;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
 
-#addNewBtn {
-    margin-top: 5%; /* Converted from 9rem */
-}
+        .modal-content {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            width: 60rem;
+            height: 52rem;
+            max-width: 90%;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
 
-.modal {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-}
+        .close {
+            float: right;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            color: #666;
+        }
 
-.modal-content {
-    background: white;
-    padding: 2.5%; /* Converted from 25px */
-    border-radius: 10px;
-    width: 90%; /* Converted from 60rem */
-    height: 90%; /* Converted from 52rem */
-    max-width: 90%;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-}
+        .close:hover {
+            color: #000;
+        }
 
-.close {
-    float: right;
-    font-size: 150%; /* Converted from 24px (assuming 16px base) */
-    font-weight: bold;
-    cursor: pointer;
-    color: #666;
-}
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            column-gap: 130px;
+            row-gap: 10px;
+            margin-right: 10px;
+            padding: 40px;
+        }
 
-.close:hover {
-    color: #000;
-}
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
 
-.form-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    column-gap: 13.5%; /* Converted from 130px */
-    row-gap: 1%;
-    margin-right: 1%;
-    padding: 4%;
-}
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #444;
+        }
 
-.form-group {
-    margin-bottom: 1.5%;
-}
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
 
-.form-group label {
-    display: block;
-    margin-bottom: 0.5%;
-    font-weight: 500;
-    color: #444;
-}
+        .form-group input:focus {
+            border-color: #28a745;
+            outline: none;
+            box-shadow: 0 0 5px rgba(40, 167, 69, 0.5);
+        }
 
-.form-group input {
-    width: 100%;
-    padding: 1.5%;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    font-size: 87.5%; /* Converted from 14px */
-    transition: border-color 0.3s ease;
-}
 
-.form-group input:focus {
-    border-color: #28a745;
-    outline: none;
-    box-shadow: 0 0 5px rgba(40, 167, 69, 0.5);
-}
+        .formbtn {
+            margin-top: 1rem;
+        }
 
-.formbtn {
-    margin-top: 1%;
-}
+    
+        .btn {
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
 
-.btn {
-    padding: 1% 2%; /* Converted from 5px 10px */
-    border-radius: 5px;
-    font-size: 87.5%; /* Converted from 14px */
-    cursor: pointer;
-    transition: background 0.3s ease;
-}
+        .btn-primary {
+            background-color: #007bff;
+            color: white;
+            border: none;
+        }
 
-.btn-primary {
-    background-color: #007bff;
-    color: white;
-    border: none;
-}
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
 
-.btn-primary:hover {
-    background-color: #0056b3;
-}
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+        }
 
-.btn-danger {
-    background-color: #dc3545;
-    color: white;
-    border: none;
-}
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
 
-.btn-danger:hover {
-    background-color: #c82333;
-}
+        @media (max-width: 768px) {
+            #example {
+                display: block;
+                overflow-x: auto;
+            }
+        }
+        .dataTables_wrapper .dataTables_filter {
+            margin-bottom: 20px; 
+        }
 
-@media (max-width: 768px) {
-    #example {
-        display: block;
-        overflow-x: auto;
-    }
-}
+        .dataTables_wrapper .dataTables_filter input {
+            padding: 8px 12px; 
+            border: 1px solid #ddd; 
+            border-radius: 5px; 
+            font-size: 14px; 
+            transition: border-color 0.3s ease; 
+        }
 
-.dataTables_wrapper .dataTables_filter {
-    margin-bottom: 2%;
-}
+        .dataTables_wrapper .dataTables_filter input:focus {
+            border-color: #28a745; 
+            outline: none; 
+            box-shadow: 0 0 5px rgba(40, 167, 69, 0.5); 
+        }
 
-.dataTables_wrapper .dataTables_filter input {
-    padding: 1.5% 2%;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    font-size: 87.5%;
-    transition: border-color 0.3s ease;
-}
+        .btn-success {
+            background: var(--primary-color);
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(67, 97, 238, 0.2);
+        }
 
-.dataTables_wrapper .dataTables_filter input:focus {
-    border-color: #28a745;
-    outline: none;
-    box-shadow: 0 0 5px rgba(40, 167, 69, 0.5);
-}
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(67, 97, 238, 0.3);
+            background: #3650c7;
+        }
 
-.btn-success {
-    background: var(--primary-color);
-    color: white;
-    padding: 2% 4%; /* Converted from 0.8rem 1.5rem */
-    border-radius: 8px;
-    font-weight: 500;
-    transition: var(--transition);
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5%;
-    border: none;
-    cursor: pointer;
-    box-shadow: 0 2px 4px rgba(67, 97, 238, 0.2);
-}
+    
+        .table-container {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            margin-top: 1.5rem;
+            padding: 1rem;
+        }
 
-.btn-success:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 6px rgba(67, 97, 238, 0.3);
-    background: #3650c7;
-}
+        #example {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
 
-.table-container {
-    background: white;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    margin-top: 1.5%;
-    padding: 1%;
-    width: 187%;
-}
+        #example thead {
+            background: var(--primary-color);
+            color: white;
+        }
 
-#example {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
-}
+        #example th {
+            padding: 1rem;
+            font-weight: 600;
+            text-align: left;
+            border-bottom: none;
+        }
 
-#example thead {
-    background: var(--primary-color);
-    color: white;
-}
+        #example td {
+            padding: 1rem;
+            border-bottom: 1px solid #e9ecef;
+        }
 
-#example th {
-    padding: 1%;
-    font-weight: 600;
-    text-align: left;
-    border-bottom: none;
-}
+        #example tr:last-child td {
+            border-bottom: none;
+        }
 
-#example td {
-    padding: 1%;
-    border-bottom: 1px solid #e9ecef;
-}
+        #example tbody tr:hover {
+            background-color: #f8f9fa;
+        }
 
-#example tr:last-child td {
-    border-bottom: none;
-}
+        
+        .btn-sm {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.875rem;
+        }
 
-#example tbody tr:hover {
-    background-color: #f8f9fa;
-}
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
 
-.btn-sm {
-    padding: 0.5% 1%; /* Converted from 0.4rem 0.8rem */
-    font-size: 87.5%;
-}
+        .btn-danger {
+            background: var(--danger-color);
+            color: white;
+        }
 
-.dataTables_wrapper .dataTables_filter input {
-    border: 2px solid #e9ecef;
-    border-radius: 8px;
-    padding: 0.5% 1%;
-    transition: var(--transition);
-}
+        .dataTables_wrapper .dataTables_filter input {
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            transition: var(--transition);
+        }
 
-.dataTables_wrapper .dataTables_paginate .paginate_button {
-    border-radius: 8px !important;
-    margin: 0 0.25%;
-    transition: var(--transition) !important;
-}
-</style>
+        .dataTables_wrapper .dataTables_filter input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+        }
+
+        .dataTables_wrapper .dataTables_paginate .paginate_button {
+            border-radius: 8px !important;
+            margin: 0 0.25rem;
+            transition: var(--transition) !important;
+        }
+
+        .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+            background: var(--primary-color) !important;
+            border-color: var(--primary-color) !important;
+        }
+
+        .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+            background: var(--primary-color) !important;
+            color: white !important;
+        }
+    </style>
 </head>
 <body>
+    <script>
+        function adjustZoom() {
+        let screenWidth = window.innerWidth;
+        let zoomLevel = 1;
+
+        if (screenWidth < 1400) zoomLevel = 0.9;
+        if (screenWidth < 1200) zoomLevel = 0.8;
+        if (screenWidth < 1024) zoomLevel = 0.7;
+        if (screenWidth < 800) zoomLevel = 0.6;
+
+        document.querySelector('.container').style.zoom = zoomLevel;
+    }
+
+    window.addEventListener('resize', adjustZoom);
+    adjustZoom();
+
+    </script>
     <div class="container">
         <?php include('../sidebar.php'); ?>
 
