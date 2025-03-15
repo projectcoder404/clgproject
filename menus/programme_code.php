@@ -153,9 +153,9 @@ $result = $conn->query("SELECT * FROM courses");
     <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.print.min.js"></script>
 
     <style>
-            /* Older desktops */
+            
     @media (max-width: 1280px) { zoom: 50%; }
-    
+
     @media screen and (max-width: 1366px) {
     body {
         zoom: 80%;
