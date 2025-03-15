@@ -139,7 +139,7 @@ $result = $conn->query("SELECT * FROM courses");
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="../public/css/sidebar.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <script src="./public/js/main.js"></script>
+    
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
@@ -406,6 +406,7 @@ $result = $conn->query("SELECT * FROM courses");
     </style>
 </head>
 <body>
+
     </script>
     <div class="container">
         <?php include('../sidebar.php'); ?>
@@ -761,5 +762,6 @@ $result = $conn->query("SELECT * FROM courses");
             });
         });
     </script>
+
 </body>
 </html>

@@ -72,3 +72,22 @@
                 </div>
             </div>
         </div>
+
+
+<script>
+    function adjustZoom() {
+        const screenWidth = window.innerWidth;
+        let baseFontSize = 16; // Default font size in pixels
+
+        if (screenWidth <= 1366) {
+        baseFontSize = 11.6; // Decrease font size for smaller screens
+        }
+
+        document.documentElement.style.fontSize = `${baseFontSize}px`;
+        }
+
+        // Call function on page load and resize
+        document.addEventListener("DOMContentLoaded", adjustZoom);
+        window.addEventListener("resize", adjustZoom);
+
+</script>
