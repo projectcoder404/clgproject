@@ -153,20 +153,6 @@ $result = $conn->query("SELECT * FROM courses");
     <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.print.min.js"></script>
 
     <style>
-            
-    @media (max-width: 1280px) { zoom: 50%; }
-
-    @media screen and (max-width: 1366px) {
-    body {
-        zoom: 58%;
-    }
-}
-
-    /* Legacy laptops */
-    @media (max-width: 1024px) { /* ... */ }
-
-    /* Tablet-sized screens */
-    @media (max-width: 768px) { /* ... */ }
         :root {
             --primary-color: #4361ee;
             --success-color: #06d6a0;
