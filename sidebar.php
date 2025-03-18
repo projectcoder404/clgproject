@@ -26,10 +26,11 @@
                     <i class="fas fa-bullseye"></i>
                     <span>Course Outcomes</span>
                 </div></a>
-                <div class="menu-item" data-page="mapping_cos_pos">
+                <a href="/projectcoder/clgproject/menus/mapping_of_cos_with_pos.php">
+                    <div class="menu-item" data-page="mapping_cos_pos">
                     <i class="fas fa-sitemap"></i>
                     <span>Mapping COs With POs</span>
-                </div>
+                </div></a>
                 <div class="menu-item" data-page="mapping_cos_psos">
                     <i class="fas fa-network-wired"></i>
                     <span>Mapping COs with PSOs</span>
