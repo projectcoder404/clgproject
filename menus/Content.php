@@ -309,46 +309,76 @@ $result = $conn->query("SELECT * FROM content");
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
 
-    <script>
-        $(document).ready(function() {
-            // Initialize DataTable
-            $('#dataTable').DataTable({
-                responsive: true,
-                dom: '<"top"<"d-flex justify-content-between align-items-center"fB>>rt<"bottom"lip>',
-                buttons: ['copy', 'csv', 'excel', 'pdf', 'print'],
-                language: {
-                    search: "_INPUT_",
-                    searchPlaceholder: "Search records..."
-                }
-            });
+ <!-- PHP portion remains the same as in original code -->
+<!-- Focus on JavaScript fixes below -->
 
-            // Modal Handling
-            const modals = {
-                add: $('#addModal'),
-                edit: $('#editModal'),
-                delete: $('#deleteModal')
-            };
-
-            // Show modal function
-            function showModal(modal) {
-                $('.modal').removeClass('active');
-                modal.addClass('active');
+<script>
+    $(document).ready(function() {
+        // Initialize DataTable
+        $('#dataTable').DataTable({
+            responsive: true,
+            dom: '<"top"<"d-flex justify-content-between align-items-center"fB>>rt<"bottom"lip>',
+            buttons: ['copy', 'csv', 'excel', 'pdf', 'print'],
+            language: {
+                search: "_INPUT_",
+                searchPlaceholder: "Search records..."
             }
-
-            // Edit Button
-            $(document).on('click', '.edit-btn', function() {
-                const data = $(this).data();
-                $('#edit_id').val(data.id);
-                $('#edit_course_code').val(data.code);
-                $('#edit_unit').val(data.unit);
-                $('#edit_content').val(data.content);
-                $('#edit_hour').val(data.hour);
-                showModal(modals.edit);
-            });
-
-            // Rest of the JavaScript from style code
-            // ... (keep the original modal handling code)
         });
-    </script>
+
+        // Modal Handling
+        const modals = {
+            add: $('#addModal'),
+            edit: $('#editModal'),
+            delete: $('#deleteModal')
+        };
+
+        // Show modal function
+        function showModal(modal) {
+            $('.modal').removeClass('active');
+            modal.addClass('active');
+        }
+
+        // Close modal function
+        function closeModals() {
+            $('.modal').removeClass('active');
+        }
+
+        // Add New Button
+        $('#addNewBtn').click(() => showModal(modals.add));
+
+        // Edit Button
+        $(document).on('click', '.edit-btn', function() {
+            const data = $(this).data();
+            $('#edit_id').val(data.id);
+            $('#edit_course_code').val(data.code);
+            $('#edit_unit').val(data.unit);
+            $('#edit_content').val(data.content);
+            $('#edit_hour').val(data.hour);
+            showModal(modals.edit);
+        });
+
+        // Delete Button
+        $(document).on('click', '.delete-btn', function() {
+            const id = $(this).data('id');
+            $('#delete_id').val(id);
+            showModal(modals.delete);
+        });
+
+        // Close buttons
+        $('.close, .popupclose').click(closeModals);
+
+        // Close modal on background click
+        $(window).click(function(e) {
+            if ($(e.target).hasClass('modal')) {
+                closeModals();
+            }
+        });
+
+        // Close modal on ESC key
+        $(document).keyup(function(e) {
+            if (e.key === "Escape") closeModals();
+        });
+    });
+</script>
 </body>
 </html>
