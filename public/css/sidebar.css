@@ -43,8 +43,9 @@ body {
 }
 
 a{
-    text-decoration: none;
+    text-decoration: none !important;
     color: var(--light-text);
+
 }
 
 @keyframes slideIn {
