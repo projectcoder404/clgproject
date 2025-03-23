@@ -87,61 +87,227 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
     <link rel="stylesheet" href="../public/css/sidebar.css">
-    <style>
-        .content-area {
-            margin-left: 19vw;
-            margin-right: 2vw;
-            padding: 20px;
-        }
+<style>
+    :root {
+    --primary-color: #4361ee;
+    --success-color: #06d6a0;
+    --danger-color: #ef476f;
+    --text-color: #2b2d42;
+    --background-color: #f8f9fa;
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --border-radius: 8px;
+    --box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
 
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.4);
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
+/* Layout Styles */
+.content-area {
+    margin-left: 20.3%;
+    margin-right: 15%;
+    padding: 20px;
+    width: 71rem;
+    margin-top:8rem;
+}
 
-        .modal-content {
-            background: white;
-            padding: 25px;
-            border-radius: 10px;
-            width: 60rem;
-            max-width: 90%;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-        }
+.table-container {
+    border-radius: 12px;
+    overflow: hidden;
+    margin-top: 1.5rem;
+}
 
-        .form-row {
-            display: flex;
-            gap: 20px;
-            margin-bottom: 15px;
-        }
+/* Table Styles */
+table {
+    width: 100%;
+    padding: 2rem;
+    background: white;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border-collapse: separate;
+    border-spacing: 0;
+    margin-bottom: 2rem;
+}
 
-        .form-column {
-            flex: 1;
-        }
+#mappingTable th,
+#mappingTable td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #e9ecef;
+}
 
-        .btn-success {
-            background: #4361ee;
-            color: white;
-            padding: 0.8rem 1.5rem;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-        }
+#mappingTable th:not(:last-child)::after,
+#mappingTable td:not(:last-child)::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 60%;
+    width: 1px;
+    background-color: #dee2e6;
+}
 
-        .table-container {
-            background: white;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            margin-top: 1.5rem;
-        }
-    </style>
+/* Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: white;
+    padding: 30px;
+    border-radius: var(--border-radius);
+    width: 60rem;
+    height: 33rem;
+    max-width: 90%;
+    box-shadow: var(--box-shadow);
+}
+
+/* Form Styles */
+.form-row {
+    display: flex;
+    gap: 25px;
+    margin-bottom: 20px;
+}
+
+.form-column {
+    flex: 1;
+    margin-right: 1rem;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: var(--text-color);
+}
+
+.form-group input {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #e9ecef;
+    border-radius: var(--border-radius);
+    font-size: 14px;
+    transition: var(--transition);
+}
+
+.form-group input:focus {
+    border-color: var(--primary-color);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+}
+
+/* Button Styles */
+.btn {
+    padding: 12px 24px;
+    border-radius: var(--border-radius);
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    border: none;
+    color: white;
+}
+
+.btn-success {
+    background: var(--primary-color);
+    color: white;
+    box-shadow: 0 2px 4px rgba(67, 97, 238, 0.2);
+}
+
+.btn-success:hover {
+    background: #3650c7;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(67, 97, 238, 0.3);
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+}
+
+.btn-danger {
+    background-color: var(--danger-color);
+}
+
+/* DataTable Overrides */
+.dataTables_wrapper .dataTables_filter input {
+    padding: 0.5rem 1rem;
+    border: 2px solid #e9ecef;
+    border-radius: var(--border-radius);
+    transition: var(--transition);
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button {
+    border-radius: var(--border-radius) !important;
+    margin: 0 0.25rem;
+}
+/* Update your modal and form styles */
+.modal-content {
+    padding: 30px;
+    border-radius: 12px;
+}
+
+.form-row {
+    gap: 25px;
+    margin-bottom: 20px;
+}
+
+.form-column label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #2b2d42;
+}
+.close{
+    cursor: pointer;
+    font-size: 25px;
+}
+
+.form-column input {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.form-column input:focus {
+    border-color: #4361ee;
+    box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+}
+
+.btn-success {
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .content-area {
+        margin-left: 2vw;
+        margin-right: 2vw;
+        width: 96%;
+    }
+
+    .modal-content {
+        padding: 20px;
+        height: auto;
+    }
+
+    .form-row {
+        flex-direction: column;
+        gap: 15px;
+    }
+}
+</style>
 </head>
 <body>
     <div class="container">
@@ -198,10 +364,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                         data-po5="<?= $row['po5'] ?>"
                                         data-po6="<?= $row['po6'] ?>"
                                         data-po7="<?= $row['po7'] ?>">
-                                        <i class="fas fa-edit"></i>
+                                        <i class="fas fa-edit"></i> Edit
                                     </button>
                                     <button class="btn btn-sm btn-danger deleteBtn" data-id="<?= $row['id'] ?>">
-                                        <i class="fas fa-trash"></i>
+                                        <i class="fas fa-trash"></i> Delete
                                     </button>
                                 </td>
                             </tr>
@@ -214,7 +380,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div id="addNewModal" class="modal">
                 <div class="modal-content">
                     <span class="close">&times;</span>
-                    <h2>Add CO-PO Mapping</h2>
+                    <h2>Add CO-PO Mapping</h2><br>
                     <form method="POST">
                         <div class="form-row">
                             <div class="form-column">
@@ -253,7 +419,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 <label for="po7">PO7</label>
                                 <input type="text" name="po7" class="restricted-input" required>
                             </div>
-                        </div>
+                        </div><br><br>
                         <button type="submit" name="save_mapping_cos" class="btn btn-success mt-3">Save Mapping</button>
                     </form>
                 </div>
@@ -339,7 +505,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Input Validation
             $('.restricted-input').on('input', function() {
                 let value = $(this).val().toUpperCase();
-                value = value.replace(/[^SM]/g, '');
+                value = value.replace(/[^SML]/g, ''); // Updated regex
                 $(this).val(value);
             });
 
@@ -376,261 +542,3 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </html>
 
 
-
-
-
-
-
-    <style>
-        :root {
-            --primary-color: #4361ee;
-            --success-color: #06d6a0;
-            --danger-color: #ef476f;
-            --text-color: #2b2d42;
-            --background-color: #f8f9fa;
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .content-area {
-            margin-left: 20.3%;
-            margin-right: 15%;
-        }
-
-        #addNewBtn{
-            margin-top: 9rem;
-        }
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-
-        .modal-content {
-            background: white;
-            padding: 25px;
-            border-radius: 10px;
-            width: 60rem;
-            height: 52rem;
-            max-width: 90%;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-        }
-
-        .close {
-            float: right;
-            font-size: 24px;
-            font-weight: bold;
-            cursor: pointer;
-            color: #666;
-        }
-
-        .close:hover {
-            color: #000;
-        }
-
-        
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            column-gap: 130px;
-            row-gap: 10px;
-            margin-right: 10px;
-            padding: 40px;
-        }
-
-        
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 500;
-            color: #444;
-        }
-
-        .form-group input {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 14px;
-            transition: border-color 0.3s ease;
-        }
-
-        .form-group input:focus {
-            border-color: #28a745;
-            outline: none;
-            box-shadow: 0 0 5px rgba(40, 167, 69, 0.5);
-        }
-
-
-        .formbtn {
-            margin-top: 1rem;
-        }
-
-    
-        .btn {
-            padding: 5px 10px;
-            border-radius: 5px;
-            font-size: 14px;
-            cursor: pointer;
-            transition: background 0.3s ease;
-        }
-
-        .btn-primary {
-            background-color: #007bff;
-            color: white;
-            border: none;
-        }
-
-        .btn-primary:hover {
-            background-color: #0056b3;
-        }
-
-        .btn-danger {
-            background-color: #dc3545;
-            color: white;
-            border: none;
-        }
-
-        .btn-danger:hover {
-            background-color: #c82333;
-        }
-
-        @media (max-width: 768px) {
-            #example {
-                display: block;
-                overflow-x: auto;
-            }
-        }
-        .dataTables_wrapper .dataTables_filter {
-            margin-bottom: 20px; 
-        }
-
-        .dataTables_wrapper .dataTables_filter input {
-            padding: 8px 12px; 
-            border: 1px solid #ddd; 
-            border-radius: 5px; 
-            font-size: 14px; 
-            transition: border-color 0.3s ease; 
-        }
-
-        .dataTables_wrapper .dataTables_filter input:focus {
-            border-color: #28a745; 
-            outline: none; 
-            box-shadow: 0 0 5px rgba(40, 167, 69, 0.5); 
-        }
-
-        .btn-success {
-            background: var(--primary-color);
-            color: white;
-            padding: 0.8rem 1.5rem;
-            border-radius: 8px;
-            font-weight: 500;
-            transition: var(--transition);
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            border: none;
-            cursor: pointer;
-            box-shadow: 0 2px 4px rgba(67, 97, 238, 0.2);
-        }
-
-        .btn-success:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 6px rgba(67, 97, 238, 0.3);
-            background: #3650c7;
-        }
-
-    
-        .table-container {
-            background: white;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            margin-top: 1.5rem;
-            padding: 1rem;
-        }
-
-        #example {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
-        }
-
-        #example thead {
-            background: var(--primary-color);
-            color: white;
-        }
-
-        #example th {
-            padding: 1rem;
-            font-weight: 600;
-            text-align: left;
-            border-bottom: none;
-        }
-
-        #example td {
-            padding: 1rem;
-            border-bottom: 1px solid #e9ecef;
-        }
-
-        #example tr:last-child td {
-            border-bottom: none;
-        }
-
-        #example tbody tr:hover {
-            background-color: #f8f9fa;
-        }
-
-        
-        .btn-sm {
-            padding: 0.4rem 0.8rem;
-            font-size: 0.875rem;
-        }
-
-        .btn-primary {
-            background: var(--primary-color);
-            color: white;
-        }
-
-        .btn-danger {
-            background: var(--danger-color);
-            color: white;
-        }
-
-        .dataTables_wrapper .dataTables_filter input {
-            border: 2px solid #e9ecef;
-            border-radius: 8px;
-            padding: 0.5rem 1rem;
-            transition: var(--transition);
-        }
-
-        .dataTables_wrapper .dataTables_filter input:focus {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
-        }
-
-        .dataTables_wrapper .dataTables_paginate .paginate_button {
-            border-radius: 8px !important;
-            margin: 0 0.25rem;
-            transition: var(--transition) !important;
-        }
-
-        .dataTables_wrapper .dataTables_paginate .paginate_button.current {
-            background: var(--primary-color) !important;
-            border-color: var(--primary-color) !important;
-        }
-
-        .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
-            background: var(--primary-color) !important;
-            color: white !important;
-        }
-    </style>

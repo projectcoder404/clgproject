@@ -348,6 +348,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         #addNewBtn {   
             margin-top: 9rem;   
             background: #3650c7; 
+            margin-bottom:3rem;
+        }
+        table{
+            padding:3rem;
         }
     </style>
 

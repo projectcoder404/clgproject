@@ -96,6 +96,7 @@ if ($result) {
             margin-left: 19vw;
             margin-right: 2vw;
             padding: 2rem;
+            width: 71rem !important;
         }
 
        
@@ -286,6 +287,10 @@ if ($result) {
             background: #3650c7; 
             color:white;
         }
+
+        table{
+            padding:3rem;
+        }
     </style>
 <body>
 
@@ -390,7 +395,7 @@ if ($result) {
                                 echo "<td>" . htmlspecialchars($row['course_code']) . "</td>";
                                 echo "<td>" . htmlspecialchars($row['course_outcomes']) . "</td>";
                                 echo "<td>";
-                                    echo "<button class='btn btn-sm btn-primary editBtn' data-id='".$row['id']."' data-code='".$row['course_code']."' data-course_outcomes='".$row['course_outcomes']."'><i class='bi bi-pencil'></i>Edit</button>";
+                                    echo "<button class='btn btn-sm btn-primary editBtn ' data-id='".$row['id']."' data-code='".$row['course_code']."' data-course_outcomes='".$row['course_outcomes']."'><i class='fas fa-trash'>  </i>Edit</button>";
                                     echo "<button class='btn btn-sm btn-danger ms-2 delete-button' data-item-id='".$row['id']."'><i class='bi bi-trash'></i> Delete</button>";
                                 echo "</td>";
                             echo "</tr>";

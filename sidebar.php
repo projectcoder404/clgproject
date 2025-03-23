@@ -8,11 +8,12 @@
                 <h2>Course Dashboard</h2>
             </div>
             <div class="menu-list">
-                
+            
+            <a href="/projectcoder/clgproject/menus/Dashboard.php">
                 <div class="menu-item" data-page="dashboard">
                     <i class="fas fa-home"></i>
                     <span>Dashboard</span>
-                </div>
+                </div></a>
                 <a href="/projectcoder/clgproject/menus/programme_code.php"><div class="menu-item" data-page="programme_code">
                     <i class="fas fa-barcode"></i>
                     <span>Programme Code</span>
@@ -76,14 +77,16 @@
                     <i class="fas fa-users-cog"></i>
                     <span>Course Designers</span>
                 </div></a>
+                <a href="/projectcoder/clgproject/menus/Department.php">
                 <div class="menu-item" data-page="department">
                     <i class="fas fa-university"></i>
                     <span>Department</span>
-                </div>
+                </div></a>
+                <a href="/projectcoder/clgproject/menus/DownloadPDF.php">
                 <div class="menu-item" data-page="download_pdf">
                     <i class="fas fa-file-pdf"></i>
                     <span>Download PDF</span>
-                </div>
+                </div></a>
             </div>
         </div>
 

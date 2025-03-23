@@ -462,8 +462,8 @@ $result = $conn->query("SELECT * FROM courses");
                                 <td><?= $row['external'] ?></td>
                                 <td><?= $row['total'] ?></td>
                                 <td>
-                                    <button class="btn btn-sm btn-primary editBtn" data-id="<?= $row['id'] ?>">Edit</button>
-                                    <button class="btn btn-sm btn-danger deleteBtn" data-id="<?= $row['id'] ?>">Delete</button>
+                                    <button class="btn btn-sm btn-primary editBtn" data-id="<?= $row['id'] ?>"><i class="fas fa-edit">  </i>Edit</button>
+                                    <button class="btn btn-sm btn-danger deleteBtn" data-id="<?= $row['id'] ?>"><i class="fas fa-trash">  </i> Delete</button>
                                 </td>
                             </tr>
                         <?php endwhile; ?>

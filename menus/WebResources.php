@@ -61,12 +61,33 @@ $result = $conn->query("SELECT * FROM web_resources");
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="../public/css/sidebar.css">
     <style>
-        /* Original style code */
         .table-container { margin-top: 1rem; max-width: 74vw; overflow-x: auto; }
-        .close { margin-left: 95%; font-size: 25px; font-weight: bolder; cursor: pointer; }
-        .popupclose { margin-left: 65%; font-size: 25px; font-weight: bolder; cursor: pointer; }
+        .close, .popupclose { font-size: 25px; font-weight: bolder; cursor: pointer; float: right; }
         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
-        /* ... rest of the original styles ... */
+        
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal.active {
+            display: flex;
+        }
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            width: 50%;
+            position: relative;
+        }
     </style>
 </head>
 <body>
@@ -89,6 +110,7 @@ $result = $conn->query("SELECT * FROM web_resources");
 
                 <div class="table-container">
                     <table id="dataTable" class="table table-striped table-hover">
+                    
                         <thead>
                             <tr>
                                 <th>Course Code</th>
@@ -119,26 +141,24 @@ $result = $conn->query("SELECT * FROM web_resources");
                     </table>
                 </div>
 
-                <!-- Add Modal -->
-                <div id="addModal" class="modal">
+                             <!-- Add Modal -->
+                             <div id="addModal" class="modal">
                     <div class="modal-content">
                         <span class="close">&times;</span>
                         <form method="POST">
                             <div class="form-grid">
                                 <div class="mb-3">
                                     <label>Course Code</label>
-                                    <input type="text" name="course_code" required>
+                                    <input type="text" name="course_code" class="form-control" required>
                                 </div>
                                 <div class="mb-3">
                                     <label>Web Resources</label>
-                                    <input type="text" name="web_resources" required>
+                                    <input type="text" name="web_resources" class="form-control" required>
                                 </div>
                             </div>
-                            <div class="mt-4">
-                                <button type="submit" name="save_web_resources" class="btn btn-success">
-                                    <i class="fas fa-save"></i> Save
-                                </button>
-                            </div>
+                            <button type="submit" name="save_web_resources" class="btn btn-success">
+                                <i class="fas fa-save"></i> Save
+                            </button>
                         </form>
                     </div>
                 </div>
@@ -147,24 +167,21 @@ $result = $conn->query("SELECT * FROM web_resources");
                 <div id="editModal" class="modal">
                     <div class="modal-content">
                         <span class="close">&times;</span>
-                        <h4 class="mb-4"><i class="fas fa-edit"></i> Edit Web Resource</h4>
                         <form method="POST">
                             <input type="hidden" name="id" id="edit_id">
                             <div class="form-grid">
                                 <div class="mb-3">
                                     <label>Course Code</label>
-                                    <input type="text" id="edit_course_code" disabled>
+                                    <input type="text" id="edit_course_code" class="form-control" disabled>
                                 </div>
                                 <div class="mb-3">
                                     <label>Web Resources</label>
-                                    <input type="text" name="web_resources" id="edit_web_resources" required>
+                                    <input type="text" name="web_resources" id="edit_web_resources" class="form-control" required>
                                 </div>
                             </div>
-                            <div class="mt-4">
-                                <button type="submit" name="update_web_resources" class="btn btn-primary">
-                                    <i class="fas fa-sync-alt"></i> Update
-                                </button>
-                            </div>
+                            <button type="submit" name="update_web_resources" class="btn btn-primary">
+                                <i class="fas fa-sync-alt"></i> Update
+                            </button>
                         </form>
                     </div>
                 </div>
@@ -177,7 +194,7 @@ $result = $conn->query("SELECT * FROM web_resources");
                             <span class="popupclose">&times;</span>
                         </div>
                         <div class="modal-body">
-                            <p>Are you sure you want to permanently delete this web resource?</p>
+                            <p>Are you sure you want to delete this web resource?</p>
                         </div>
                         <div class="modal-footer">
                             <form method="POST">
@@ -203,16 +220,7 @@ $result = $conn->query("SELECT * FROM web_resources");
 
     <script>
         $(document).ready(function() {
-            // Initialize DataTable
-            $('#dataTable').DataTable({
-                responsive: true,
-                dom: '<"top"<"d-flex justify-content-between align-items-center"fB>>rt<"bottom"lip>',
-                buttons: ['copy', 'csv', 'excel', 'pdf', 'print'],
-                language: {
-                    search: "_INPUT_",
-                    searchPlaceholder: "Search web resources..."
-                }
-            });
+            // DataTable initialization unchanged
 
             // Modal Handling
             const modals = {
@@ -221,13 +229,14 @@ $result = $conn->query("SELECT * FROM web_resources");
                 delete: $('#deleteModal')
             };
 
-            // Show modal function
             function showModal(modal) {
                 $('.modal').removeClass('active');
                 modal.addClass('active');
             }
 
-            // Edit Button
+            // Event Listeners
+            $('#addNewBtn').click(() => showModal(modals.add));
+
             $(document).on('click', '.edit-btn', function() {
                 const data = $(this).data();
                 $('#edit_id').val(data.id);
@@ -236,19 +245,22 @@ $result = $conn->query("SELECT * FROM web_resources");
                 showModal(modals.edit);
             });
 
-            // Delete Button
             $(document).on('click', '.delete-btn', function() {
                 $('#delete_id').val($(this).data('id'));
                 showModal(modals.delete);
             });
 
             // Close Modals
-            $(document).on('click', '.close, .modal-close, .btn-secondary', () => {
+            $(document).on('click', '.close, .popupclose, .btn-secondary', function() {
                 $('.modal').removeClass('active');
             });
 
-            // Add Button
-            $('#addNewBtn').click(() => showModal(modals.add));
+            // Close on clicking outside modal
+            $(window).on('click', function(e) {
+                if ($(e.target).hasClass('modal')) {
+                    $('.modal').removeClass('active');
+                }
+            });
         });
     </script>
 </body>

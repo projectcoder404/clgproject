@@ -129,10 +129,10 @@ $result = $conn->query($sql);
             }
 
         .content-area {
-            margin-left: 19vw;
+            margin-left: 20vw;
             margin-right: 2vw;
             padding: 2rem;
-            width: 60rem !important; 
+            width: 71rem !important;
         }
 
         
@@ -190,9 +190,10 @@ $result = $conn->query($sql);
             border: none;
             cursor: pointer;
         }
+        
 
         .btn-primary {
-            background: var(--primary-color);
+            background: var(--primary-color) !important;
             color: white;
         }
 
@@ -301,8 +302,9 @@ $result = $conn->query($sql);
             padding-left: 30px;
             margin-top: 33px;
             border-radius: 13px;
+            
         }
-
+        
         
         @keyframes modalFadeIn {
             from { opacity: 0; backdrop-filter: blur(0); }
@@ -329,6 +331,12 @@ $result = $conn->query($sql);
                 overflow-x: auto;
             }
         }
+        /* margin-bottom:3rem;
+        } */
+        #example{
+            padding:3rem;
+        }
+
     </style>
 </head>
 <body>
