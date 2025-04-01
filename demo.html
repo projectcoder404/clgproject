@@ -1,0 +1,211 @@
+<?php
+session_start();
+require_once '../db_connect.php';
+require_once '../vendor/autoload.php'; 
+use Dompdf\Dompdf;
+use Dompdf\Options;
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['course_codes'])) {
+    $courseCodes = explode(',', trim($_POST['course_codes']));
+    $html = '';
+
+    foreach ($courseCodes as $code) {
+        $code = trim($code);
+
+        // Fetch course data
+        $stmt = $conn->prepare("SELECT * FROM courses WHERE course_code = ?");
+        $stmt->bind_param("s", $code);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $course = $result->fetch_assoc();
+        $stmt->close();
+
+        // Fetch preamble
+        $stmt = $conn->prepare("SELECT preamble FROM preamble WHERE course_code = ?");
+        $stmt->bind_param("s", $code);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $preamble = $result->fetch_assoc();
+        $stmt->close();
+
+        // Fetch course outcomes
+        $stmt_course_outcomes = $conn->prepare("SELECT course_outcomes FROM course_outcomes WHERE course_code = ?");
+        $stmt_course_outcomes->bind_param("s", $code);
+        $stmt_course_outcomes->execute();
+        $result_course_outcomes = $stmt_course_outcomes->get_result();
+        $course_outcomes = $result_course_outcomes->fetch_assoc();
+        $stmt_course_outcomes->close();
+
+        // Fetch MappingPSOs
+        $stmt_MappingPSOs = $conn->prepare("SELECT * FROM MappingPSOs WHERE course_code = ?");
+        $stmt_MappingPSOs->bind_param("s", $code);
+        $stmt_MappingPSOs->execute();
+        $result_MappingPSOs = $stmt_MappingPSOs->get_result();
+        $MappingPSOs = $result_MappingPSOs->fetch_assoc();
+        $stmt_MappingPSOs->close();
+
+        if ($course) {
+            $html .= '<div style="text-align: center; font-family: Times New Roman, serif;">
+            <h3 style="margin: 0; font-size: 16px; font-weight: bold;">THIAGARAJAR COLLEGE, MADURAI - 9.</h3>
+            <h4 style="margin: 0; font-size: 14px; font-weight: bold;">(Re-Accredited with ‘A++’ Grade by NAAC)</h4>
+            <h4 style="margin: 0; font-size: 14px; font-weight: bold;">DEPARTMENT OF COMPUTER SCIENCE</h4>
+            <p style="margin: 0; font-size: 12px; font-style: italic;">
+                (For those joined M.Sc. Computer Science on or after June 2020)
+            </p>
+          </div> <br>';
+
+
+           $html .= '<h3 style="margin: 0; font-size: 16px; font-weight: bold;">'.$course['course_code'].'</h3>';
+
+            // Course Info Table
+            $html .= '<table border="1" cellspacing="0" cellpadding="5" style="width: 100%; border-collapse: collapse;">
+                        <tr>
+                            <th>Course Code</th>
+                            <th>Course Title</th>
+                            <th>Category</th>
+                            <th>Lecture</th>
+                            <th>Tutorial</th>
+                            <th>Practical</th>
+                            <th>Credit</th>
+                        </tr>
+                        <tr>
+                            <td>'.$course['course_code'].'</td>
+                            <td>'.$course['course_title'].'</td>
+                            <td>'.$course['category'].'</td>
+                            <td>'.$course['l'].'</td>
+                            <td>'.$course['t'].'</td>
+                            <td>'.$course['p'].'</td>
+                            <td>'.$course['credit'].'</td>
+                        </tr>
+                      </table><br>';
+
+            // Additional Info
+            $html .= "<p><strong>Contact hours per semester:</strong> 75</p>";
+            $html .= "<p><strong>Contact hours per week:</strong> 5</p><br>";
+
+            // Marks Table
+            $html .= '<table border="1" cellspacing="0" cellpadding="5" style="width: 100%; border-collapse: collapse;">
+                        <tr>
+                            <th>Year</th>
+                            <th>Semester</th>
+                            <th>Internal Marks (CIA)</th>
+                            <th>External Marks (ESE)</th>
+                            <th>Total Marks</th>
+                        </tr>
+                        <tr>
+                            <td>'.$course['year'].'</td>
+                            <td>'.$course['semester'].'</td>
+                            <td>'.$course['internal'].'</td>
+                            <td>'.$course['external'].'</td>
+                            <td>'.$course['total'].'</td>
+                        </tr>
+                      </table><br>';
+
+            // Preamble
+            $preamble_text = $preamble['preamble'] ?? "No preamble available.";
+            $html .= "<h4>Preamble</h4><p>{$preamble_text}</p>";
+
+            // Course Outcomes
+            if ($course_outcomes) {
+                $html .= "<h4>Course Outcomes (COs)</h4>";
+                $outcomes = explode("\n", $course_outcomes['course_outcomes']);
+                $html .= '<table border="1" cellspacing="0" cellpadding="5" style="width: 100%; border-collapse: collapse;">
+                            <tr>
+                                <th>S.NO</th>
+                                <th>Course Outcome</th>
+                                <th>Knowledge Level (RBT)</th>
+                            </tr>';
+                $i = 1;
+                foreach ($outcomes as $outcome) {
+                    if (trim($outcome) !== '') {
+                        $html .= "<tr>
+                                    <td><b>CO{$i}</b></td>
+                                    <td>{$outcome}</td>
+                                    <td>K{$i}</td>
+                                  </tr>";
+                        $i++;
+                    }
+                }
+                $html .= '</table><br>';
+            }
+
+            // Mapping PSOs
+            if ($MappingPSOs) {
+                $html .= "<h2>Mapping PSOs</h2>";
+                $html .= '<table border="1" cellspacing="0" cellpadding="5" style="width: 100%; border-collapse: collapse;">
+                            <tr>
+                                <th>PO1</th>
+                                <th>PO2</th>
+                                <th>PO3</th>
+                                <th>PO4</th>
+                                <th>PO5</th>
+                            </tr>
+                            <tr>
+                                <td>'.$MappingPSOs['po1'].'</td>
+                                <td>'.$MappingPSOs['po2'].'</td>
+                                <td>'.$MappingPSOs['po3'].'</td>
+                                <td>'.$MappingPSOs['po4'].'</td>
+                                <td>'.$MappingPSOs['po5'].'</td>
+                            </tr>
+                          </table><br>';
+            }
+        } else {
+            $html .= "<h3 style='color: red;'>No data found for course code: $code</h3><br>";
+        }
+    }
+
+    if (!empty($html)) {
+        $options = new Options();
+        $options->set('defaultFont', 'Helvetica');
+        $dompdf = new Dompdf($options);
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+        ob_end_clean();
+        $dompdf->stream("course-details.pdf", ["Attachment" => false]);
+        exit;
+    } else {
+        $_SESSION['message'] = "No valid courses found.";
+    }
+}
+
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generate Course PDF</title>
+    <link rel="stylesheet" href="../public/css/sidebar.css">
+    <style>
+            .content-area {
+                margin-left: 20.3%;
+                margin-right: 15%;
+                padding: 2rem;
+                transition: var(--transition);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+    <?php include('../sidebar.php'); ?>
+    <div class="content-area ">
+    
+        <h1>Course PDF Generator</h1>
+        <form id="pdfForm" method="POST" action="DownloadPDF.php">
+            <label for="course-code">Enter Course Code(s):</label>
+            <input type="text" name="course_codes" id="course-code" placeholder="Enter codes " required>
+            <button type="submit">Generate PDF</button>
+        </form>
+
+        <?php if (isset($_SESSION['message'])): ?>
+            <div class="alert">
+                <?= $_SESSION['message'] ?>
+                <?php unset($_SESSION['message']); ?>
+            </div>
+        <?php endif; ?>
+    </div>
+    </div>
+</body>
+</html>

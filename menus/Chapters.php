@@ -4,34 +4,48 @@ ini_set('display_errors', 1);
 require_once '../db_connect.php';
 session_start();
 
-// Handle Form Submissions
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['save_chapter'])) {
-        $course_code = $_POST['course_code'];
-        $unit = $_POST['unit'];
-        $chapter = $_POST['chapter'];
-        $book = $_POST['book'];
+        $course_code = $conn->real_escape_string($_POST['course_code']);
+        $units = $_POST['unit'];
+        $chapters = $_POST['chapter'];
+        $books = $_POST['book'];
         
-        $stmt = $conn->prepare("INSERT INTO chapter (course_code, unit, chapter, book) VALUES (?, ?, ?, ?)");
-        $stmt->bind_param("ssss", $course_code, $unit, $chapter, $book);
-        if ($stmt->execute()) {
-            $_SESSION['message'] = "New chapter added successfully!";
+        try {
+            $conn->autocommit(FALSE);
+            $stmt = $conn->prepare("INSERT INTO chapter (course_code, unit, chapter, book) VALUES (?, ?, ?, ?)");
+            
+            foreach($units as $index => $unit) {
+                $chapter = $chapters[$index];
+                $book = $books[$index];
+                $stmt->bind_param("ssss", $course_code, $unit, $chapter, $book);
+                $stmt->execute();
+            }
+            
+            $conn->commit();
+            $_SESSION['message'] = "Chapters added successfully!";
+            $_SESSION['message_type'] = "success";
+        } catch (Exception $e) {
+            $conn->rollback();
+            $_SESSION['message'] = "Error: " . $e->getMessage();
+            $_SESSION['message_type'] = "error";
         }
-        $stmt->close();
         header("Location: ".$_SERVER['PHP_SELF']);
         exit();
     }
-    
+
     if (isset($_POST['update_chapter'])) {
         $id = $_POST['id'];
-        $unit = $_POST['unit'];
-        $chapter = $_POST['chapter'];
-        $book = $_POST['book'];
-        
+        $unit = $conn->real_escape_string($_POST['unit']);
+        $chapter = $conn->real_escape_string($_POST['chapter']);
+        $book = $conn->real_escape_string($_POST['book']);
+
         $stmt = $conn->prepare("UPDATE chapter SET unit=?, chapter=?, book=? WHERE id=?");
         $stmt->bind_param("sssi", $unit, $chapter, $book, $id);
+        
         if ($stmt->execute()) {
             $_SESSION['message'] = "Chapter updated successfully!";
+            $_SESSION['message_type'] = "success";
         }
         $stmt->close();
         header("Location: ".$_SERVER['PHP_SELF']);
@@ -44,6 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->bind_param("i", $id);
         if ($stmt->execute()) {
             $_SESSION['message'] = "Chapter deleted successfully!";
+            $_SESSION['message_type'] = "success";
         }
         $stmt->close();
         header("Location: ".$_SERVER['PHP_SELF']);
@@ -51,7 +66,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$result = $conn->query("SELECT * FROM chapter");
+$result = $conn->query("SELECT * FROM chapter ORDER BY id DESC");
+$grouped_chapters = [];
+while ($row = $result->fetch_assoc()) {
+    $course_code = $row['course_code'];
+    if (!isset($grouped_chapters[$course_code])) {
+        $grouped_chapters[$course_code] = [];
+    }
+    $grouped_chapters[$course_code][] = $row;
+}
 ?>
 
 <!DOCTYPE html>
@@ -65,19 +88,6 @@ $result = $conn->query("SELECT * FROM chapter");
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="../public/css/sidebar.css">
     <style>
-        
-        .table-container { margin-top: 1rem; max-width: 74vw; overflow-x: auto; }
-        .close { margin-left: 95%; font-size: 25px; font-weight: bolder; cursor: pointer; }
-        .popupclose { margin-left: 65%; font-size: 25px; font-weight: bolder; cursor: pointer; }
-        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
-        #dataTable th {
-            white-space: nowrap;
-            color: #f8f9fa;
-        }
-        thead {
-            background-color: #4361ee;
-            color: #f8f9fa;
-            }
         :root {
             --primary-color: #4361ee;
             --success-color: #06d6a0;
@@ -87,17 +97,64 @@ $result = $conn->query("SELECT * FROM chapter");
             --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .content-area {
-            margin-left: 20.3%;
-            margin-right: 15%;
-            padding: 2rem;
-            transition: var(--transition);
+        body {
+            font-family: 'Poppins', sans-serif;
+            color: var(--text-color);
+            background-color: var(--background-color);
+            margin: 0;
+            padding: 0;
         }
 
-        #addNewBtn {
-            margin-top: 9rem;
-            transform: translateY(-50%);
-            animation: float 3s ease-in-out infinite;
+        .content-area {
+            margin-left: 20.3%;
+            padding: 2rem;
+            margin-top: 68px;
+        }
+
+        .table-container {
+            max-width: 122%;
+            margin-left: 2rem;
+            overflow-x: auto;
+            margin-top: 24px;
+            padding-bottom: 50px !important;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border-radius: 0.5rem;
+        }
+
+        th, td {
+            padding: 1rem;
+            border-bottom: 1px solid #e9ecef;
+            text-align: left;
+        }
+
+        th {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            border: none;
+            cursor: pointer;
+            transition: var(--transition);
+            margin: 0 2px;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--danger-color);
+            color: white;
         }
 
         .modal {
@@ -107,198 +164,285 @@ $result = $conn->query("SELECT * FROM chapter");
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0,0,0,0.4);
             justify-content: center;
             align-items: center;
             z-index: 1000;
-            opacity: 0;
-            transition: var(--transition);
-        }
-
-        .modal.active {
-            display: flex;
-            opacity: 1;
         }
 
         .modal-content {
             background: white;
             padding: 2rem;
-            border-radius: 1rem;
-            width: 60rem;
-            max-width: 90%;
-            box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.2);
-            transform: translateY(-50px);
+            border-radius: 0.5rem;
+            width: 800px;
+            max-width: 95%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-column {
+            flex: 1;
+        }
+
+        .close {
+            margin-top: -66px !important;
+            font-size: 27px;
+            cursor: pointer;
+        }
+
+        .form-column label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .form-column input,
+        .form-column textarea,
+        .form-column select {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #e9ecef;
+            border-radius: 0.5rem;
             transition: var(--transition);
+            font-family: 'Poppins', sans-serif;
         }
 
-        .modal.active .modal-content {
-            transform: translateY(0);
+        .form-column input:focus,
+        .form-column textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
         }
 
-        @keyframes float {
-            0%, 100% { transform: translateY(-2px); }
-            50% { transform: translateY(2px); }
+        .chapter-group {
+            border: 1px solid #e9ecef;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            position: relative;
+            background: #f8f9fa;
         }
 
-        .btn-action {
-            transition: var(--transition) !important;
-            transform: scale(1);
+        .remove-chapter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: var(--danger-color);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .btn-action:hover {
-            transform: scale(1.1);
+        .alert {
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
         }
-        #dataTable {
-            --bs-table-bg: none;
-            }
+
+        .alert-success {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+
+        .alert-error {
+            background-color: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .action {
+            width: 176px;
+        }
+
+        .add_items {
+            padding: 13px;
+        }
+
+        #courseSearch {
+            padding: 0.8rem;
+            width: 300px;
+            border-radius: 0.5rem;
+            border: 1px solid #e9ecef;
+            margin-bottom: 1rem;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        i {
+            margin-right: 4px;
+        }
     </style>
 </head>
 <body>
-    <div class="container-fluid">
-        <div class="row">
-            <?php include('../sidebar.php'); ?>
+    <?php include('../sidebar.php'); ?>
+    
+    <div class="content-area">
+        <button class="btn btn-primary add_items" onclick="openModal()">
+            <i class="fas fa-plus"></i> Add New Chapters
+        </button>
 
-            <main class="col-md-9 ml-sm-auto col-lg-10 px-md-4 content-area">
-                <button id="addNewBtn" class="btn btn-primary mb-3">
-                    <i class="fas fa-plus"></i> Add New Chapter
-                </button>
+        <?php if(isset($_SESSION['message'])): ?>
+            <div class="alert alert-<?= $_SESSION['message_type'] ?>">
+                <?= $_SESSION['message'] ?>
+                <?php 
+                unset($_SESSION['message']);
+                unset($_SESSION['message_type']);
+                ?>
+            </div>
+        <?php endif; ?>
 
-                <?php if(isset($_SESSION['message'])): ?>
-                    <div class="alert alert-info alert-dismissible fade show">
-                        <?= $_SESSION['message'] ?>
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        <?php unset($_SESSION['message']); ?>
-                    </div>
-                <?php endif; ?>
-
-                <div class="table-container">
-                    <table id="dataTable" class="table table-striped table-hover">
-                        <thead>
+        <div class="table-container">
+            <input type="text" id="courseSearch" placeholder="Search by course code...">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Course Code</th>
+                        <th>Unit</th>
+                        <th>Chapter</th>
+                        <th>Book</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($grouped_chapters as $course_code => $chapters): ?>
+                        <?php foreach ($chapters as $index => $row): ?>
                             <tr>
-                                <th>Course Code</th>
-                                <th>Unit</th>
-                                <th>Chapter</th>
-                                <th>Book</th>
-                                <th>Actions</th>
+                                <?php if ($index === 0): ?>
+                                    <td rowspan="<?= count($chapters) ?>"><?= htmlspecialchars($course_code) ?></td>
+                                <?php endif; ?>
+                                <td><?= htmlspecialchars($row['unit']) ?></td>
+                                <td><?= htmlspecialchars($row['chapter']) ?></td>
+                                <td><?= htmlspecialchars($row['book']) ?></td>
+                                <td class="action">
+                                    <button class="btn btn-primary" onclick="openEditModal(
+                                        '<?= $row['id'] ?>',
+                                        '<?= htmlspecialchars($row['course_code']) ?>',
+                                        '<?= htmlspecialchars($row['unit']) ?>',
+                                        '<?= htmlspecialchars($row['chapter']) ?>',
+                                        '<?= htmlspecialchars($row['book']) ?>'
+                                    )">
+                                        <i class="fas fa-edit"></i> Edit
+                                    </button>
+                                    <button class="btn btn-danger" onclick="confirmDelete(<?= $row['id'] ?>)">
+                                        <i class="fas fa-trash"></i> Delete
+                                    </button>
+                                </td>
                             </tr>
-                        </thead>
-                        <tbody>
-                            <?php while($row = $result->fetch_assoc()): ?>
-                                <tr>
-                                    <td><?= htmlspecialchars($row['course_code']) ?></td>
-                                    <td><?= htmlspecialchars($row['unit']) ?></td>
-                                    <td><?= htmlspecialchars($row['chapter']) ?></td>
-                                    <td><?= htmlspecialchars($row['book']) ?></td>
-                                    <td>
-                                        <button class="btn btn-sm btn-primary btn-action edit-btn" 
-                                            data-id="<?= $row['id'] ?>"
-                                            data-code="<?= $row['course_code'] ?>"
-                                            data-unit="<?= $row['unit'] ?>"
-                                            data-chapter="<?= $row['chapter'] ?>"
-                                            data-book="<?= $row['book'] ?>">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <button class="btn btn-sm btn-danger btn-action delete-btn" 
-                                            data-id="<?= $row['id'] ?>">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </td>
-                                </tr>
-                            <?php endwhile; ?>
-                        </tbody>
-                    </table>
-                </div>
+                        <?php endforeach; ?>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
 
-                <!-- Add Modal -->
-                <div id="addModal" class="modal">
-                    <div class="modal-content">
-                        <span class="close">&times;</span>
-                        <form method="POST">
-                            <div class="form-grid">
-                                <div class="mb-3">
-                                    <label>Course Code</label>
-                                    <input type="text" name="course_code" required>
-                                </div>
-                                <div class="mb-3">
+        <div id="addModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal()">&times;</span>
+                <h3>Add New Chapters</h3>
+                <form method="POST">
+                    <div class="form-row">
+                        <div class="form-column">
+                            <label>Course Code</label>
+                            <input type="text" name="course_code" required>
+                        </div>
+                    </div>
+                    
+                    <div id="chapterContainer">
+                        <div class="chapter-group">
+                            <button type="button" class="remove-chapter" onclick="removeChapter(this)" style="display: none;">&times;</button>
+                            <div class="form-row">
+                                <div class="form-column">
                                     <label>Unit</label>
-                                    <input type="text" name="unit" class="restricted-input" required>
+                                    <input type="text" name="unit[]" required>
                                 </div>
-                                <div class="mb-3">
+                                <div class="form-column">
                                     <label>Chapter</label>
-                                    <input type="number" name="chapter" required>
+                                    <input type="text" name="chapter[]" required>
                                 </div>
-                                <div class="mb-3">
+                                <div class="form-column">
                                     <label>Book</label>
-                                    <input type="number" name="book" required>
+                                    <input type="text" name="book[]" required>
                                 </div>
                             </div>
-                            <div class="mt-4">
-                                <button type="submit" name="save_chapter" class="btn btn-success">
-                                    <i class="fas fa-save"></i> Save
-                                </button>
-                            </div>
-                        </form>
+                        </div>
                     </div>
-                </div>
+                    
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-primary" onclick="addChapter()">
+                            <i class="fas fa-plus"></i> Add Another Chapter
+                        </button>
+                        <button type="submit" name="save_chapter" class="btn btn-success">
+                            <i class="fas fa-save"></i> Save All
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
 
-                <!-- Edit Modal -->
-                <div id="editModal" class="modal">
-                    <div class="modal-content">
-                        <span class="close">&times;</span>
-                        <h4 class="mb-4"><i class="fas fa-edit"></i> Edit Chapter</h4>
-                        <form method="POST">
-                            <input type="hidden" name="id" id="edit_id">
-                            <div class="form-grid">
-                                <div class="mb-3">
-                                    <label>Course Code</label>
-                                    <input type="text" id="edit_course_code" disabled>
-                                </div>
-                                <div class="mb-3">
-                                    <label>Unit</label>
-                                    <input type="text" name="unit" id="edit_unit" class="restricted-input" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label>Chapter</label>
-                                    <input type="number" name="chapter" id="edit_chapter" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label>Book</label>
-                                    <input type="number" name="book" id="edit_book" required>
-                                </div>
-                            </div>
-                            <div class="mt-4">
-                                <button type="submit" name="update_chapter" class="btn btn-primary">
-                                    <i class="fas fa-sync-alt"></i> Update
-                                </button>
-                            </div>
-                        </form>
+        <div id="editModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeEditModal()">&times;</span>
+                <h3>Edit Chapter</h3>
+                <form method="POST">
+                    <input type="hidden" name="id" id="edit_id">
+                    <div class="form-row">
+                        <div class="form-column">
+                            <label>Course Code</label>
+                            <input type="text" id="edit_course_code" disabled>
+                        </div>
+                        <div class="form-column">
+                            <label>Unit</label>
+                            <input type="text" name="unit" id="edit_unit" required>
+                        </div>
+                        <div class="form-column">
+                            <label>Chapter</label>
+                            <input type="text" name="chapter" id="edit_chapter" required>
+                        </div>
+                        <div class="form-column">
+                            <label>Book</label>
+                            <input type="text" name="book" id="edit_book" required>
+                        </div>
                     </div>
-                </div>
+                    <button type="submit" name="update_chapter" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Update
+                    </button>
+                </form>
+            </div>
+        </div>
 
-                <!-- Delete Modal -->
-                <div id="deleteModal" class="modal">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title"><i class="fas fa-exclamation-triangle"></i> Confirm Delete</h5>
-                            <span class="popupclose">&times;</span>
-                        </div>
-                        <div class="modal-body">
-                            <p>Are you sure you want to permanently delete this chapter?</p>
-                        </div>
-                        <div class="modal-footer">
-                            <form method="POST">
-                                <input type="hidden" name="id" id="delete_id">
-                                <button type="button" class="btn btn-secondary" data-dismiss="modal">
-                                    <i class="fas fa-times"></i> Cancel
-                                </button>
-                                <button type="submit" name="delete_chapter" class="btn btn-danger">
-                                    <i class="fas fa-trash"></i> Delete
-                                </button>
-                            </form>
-                        </div>
+        <div id="deleteModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeDeleteModal()">&times;</span>
+                <h3>Confirm Delete</h3>
+                <p>Are you sure you want to delete this chapter?</p>
+                <form method="POST">
+                    <input type="hidden" name="id" id="delete_id">
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" onclick="closeDeleteModal()">
+                            <i class="fas fa-times"></i> Cancel
+                        </button>
+                        <button type="submit" name="delete_chapter" class="btn btn-danger">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
                     </div>
-                </div>
-            </main>
+                </form>
+            </div>
         </div>
     </div>
 
@@ -306,79 +450,87 @@ $result = $conn->query("SELECT * FROM chapter");
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
-<!-- PHP portion remains the same as your original code -->
-<!-- Focus on the JavaScript fixes below -->
 
-<script>
-    $(document).ready(function() {
-        // Initialize DataTable
-        $('#dataTable').DataTable({
-            responsive: true,
-            dom: '<"top"<"d-flex justify-content-between align-items-center"fB>>rt<"bottom"lip>',
-            buttons: ['copy', 'csv', 'excel', 'pdf', 'print'],
-            language: {
-                search: "_INPUT_",
-                searchPlaceholder: "Search chapters..."
-            }
-        });
-
-        // Modal Handling
-        const modals = {
-            add: $('#addModal'),
-            edit: $('#editModal'),
-            delete: $('#deleteModal')
-        };
-
-        // Show modal function
-        function showModal(modal) {
-            $('.modal').removeClass('active');
-            modal.addClass('active');
+    <script>
+        function openModal() {
+            document.getElementById('addModal').style.display = 'flex';
         }
 
-        // Close modal function
-        function closeModals() {
-            $('.modal').removeClass('active');
+        function closeModal() {
+            document.getElementById('addModal').style.display = 'none';
         }
 
-        // Add New Button Click Handler
-        $('#addNewBtn').click(() => showModal(modals.add));
+        function openEditModal(id, course_code, unit, chapter, book) {
+            document.getElementById('edit_id').value = id;
+            document.getElementById('edit_course_code').value = course_code;
+            document.getElementById('edit_unit').value = unit;
+            document.getElementById('edit_chapter').value = chapter;
+            document.getElementById('edit_book').value = book;
+            document.getElementById('editModal').style.display = 'flex';
+        }
 
-        // Edit Button Click Handler
-        $(document).on('click', '.edit-btn', function() {
-            const data = $(this).data();
-            $('#edit_id').val(data.id);
-            $('#edit_course_code').val(data.code);
-            $('#edit_unit').val(data.unit);
-            $('#edit_chapter').val(data.chapter);
-            $('#edit_book').val(data.book);
-            showModal(modals.edit);
-        });
+        function closeEditModal() {
+            document.getElementById('editModal').style.display = 'none';
+        }
 
-        // Delete Button Click Handler
-        $(document).on('click', '.delete-btn', function() {
-            const id = $(this).data('id');
-            $('#delete_id').val(id);
-            showModal(modals.delete);
-        });
+        function addChapter() {
+            const chapterContainer = document.getElementById('chapterContainer');
+            const newChapter = document.createElement('div');
+            newChapter.className = 'chapter-group';
+            newChapter.innerHTML = `
+                <button type="button" class="remove-chapter" onclick="removeChapter(this)">&times;</button>
+                <div class="form-row">
+                    <div class="form-column">
+                        <label>Unit</label>
+                        <input type="text" name="unit[]" required>
+                    </div>
+                    <div class="form-column">
+                        <label>Chapter</label>
+                        <input type="text" name="chapter[]" required>
+                    </div>
+                    <div class="form-column">
+                        <label>Book</label>
+                        <input type="text" name="book[]" required>
+                    </div>
+                </div>
+            `;
+            chapterContainer.appendChild(newChapter);
+            chapterContainer.lastElementChild.scrollIntoView({ behavior: 'smooth' });
+        }
 
-        // Close Modal Handlers
-        $('.close, .popupclose').click(closeModals);
-        
-        // Close modal when clicking outside
-        $(window).click(function(e) {
-            if ($(e.target).hasClass('modal')) {
-                closeModals();
+        function removeChapter(btn) {
+            const chapterGroups = document.querySelectorAll('.chapter-group');
+            if (chapterGroups.length > 1) {
+                btn.closest('.chapter-group').remove();
             }
+        }
+
+        function confirmDelete(id) {
+            document.getElementById('delete_id').value = id;
+            document.getElementById('deleteModal').style.display = 'flex';
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').style.display = 'none';
+        }
+
+        document.getElementById('courseSearch').addEventListener('input', function() {
+            const searchTerm = this.value.trim().toLowerCase();
+            const rows = document.querySelectorAll('tbody tr');
+            
+            rows.forEach(row => {
+                const courseCode = row.cells[0].textContent.toLowerCase();
+                row.style.display = courseCode.includes(searchTerm) ? '' : 'none';
+            });
         });
 
-        // Close modal with ESC key
-        $(document).keyup(function(e) {
-            if (e.key === "Escape") closeModals();
-        });
-
-        // Input validation for unit field (Roman numerals)
-       
-    });
-</script>
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                closeModal();
+                closeEditModal();
+                closeDeleteModal();
+            }
+        }
+    </script>
 </body>
 </html>

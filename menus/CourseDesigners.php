@@ -47,7 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$result = $conn->query("SELECT * FROM course_designer");
+$result = $conn->query("SELECT * FROM course_designer ORDER BY id DESC");
 ?>
 
 <!DOCTYPE html>
@@ -57,12 +57,10 @@ $result = $conn->query("SELECT * FROM course_designer");
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Course Designer Management</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="../public/css/sidebar.css">
     <style>
-        /* Original style code */
-        .table-container { margin-top: 1rem; max-width: 74vw; overflow-x: auto; }
+        .table-container { margin-top: 1rem; max-width: 54vw; overflow-x: auto; }
         .close { margin-left: 95%; font-size: 25px; font-weight: bolder; cursor: pointer; }
         .popupclose { margin-left: 65%; font-size: 25px; font-weight: bolder; cursor: pointer; }
         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
@@ -73,7 +71,7 @@ $result = $conn->query("SELECT * FROM course_designer");
         thead {
             background-color: #4361ee;
             color: #f8f9fa;
-            }
+        }
         :root {
             --primary-color: #4361ee;
             --success-color: #06d6a0;
@@ -124,10 +122,6 @@ $result = $conn->query("SELECT * FROM course_designer");
         .modal.active .modal-content {
             transform: translateY(0);
         }
-        @keyframes float {
-            0%, 100% { transform: translateY(-2px); }
-            50% { transform: translateY(2px); }
-        }
         .btn-action {
             transition: var(--transition) !important;
             transform: scale(1);
@@ -137,7 +131,16 @@ $result = $conn->query("SELECT * FROM course_designer");
         }
         #dataTable {
             --bs-table-bg: none;
-            }
+        }
+        .search-container {
+            margin-bottom: 15px;
+        }
+        .search-container input {
+            padding: 8px;
+            width: 300px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
     </style>
 </head>
 <body>
@@ -159,6 +162,9 @@ $result = $conn->query("SELECT * FROM course_designer");
                 <?php endif; ?>
 
                 <div class="table-container">
+                    <div class="search-container">
+                        <input type="text" id="searchInput" placeholder="Search by course code...">
+                    </div>
                     <table id="dataTable" class="table table-striped table-hover">
                         <thead>
                             <tr>
@@ -169,18 +175,18 @@ $result = $conn->query("SELECT * FROM course_designer");
                         </thead>
                         <tbody>
                             <?php while($row = $result->fetch_assoc()): ?>
-                                <tr>
-                                    <td><?= htmlspecialchars($row['course_code']) ?></td>
+                                <tr class="data-row">
+                                    <td class="course-code"><?= htmlspecialchars($row['course_code']) ?></td>
                                     <td><?= htmlspecialchars($row['course_designer']) ?></td>
                                     <td>
                                         <button class="btn btn-sm btn-primary btn-action edit-btn" 
                                             data-id="<?= $row['id'] ?>"
                                             data-code="<?= $row['course_code'] ?>"
                                             data-course_designer="<?= $row['course_designer'] ?>">
-                                            <i class="fas fa-edit"></i>
+                                            <i class="fas fa-edit"></i>Edit
                                         </button>
                                         <button class="btn btn-sm btn-danger btn-action delete-btn" 
-                                            data-id="<?= $row['id'] ?>">
+                                            data-id="<?= $row['id'] ?>">Delete
                                             <i class="fas fa-trash"></i>
                                         </button>
                                     </td>
@@ -269,20 +275,20 @@ $result = $conn->query("SELECT * FROM course_designer");
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
 
     <script>
         $(document).ready(function() {
-            // Initialize DataTable
-            $('#dataTable').DataTable({
-                responsive: true,
-                dom: '<"top"<"d-flex justify-content-between align-items-center"fB>>rt<"bottom"lip>',
-                buttons: ['copy', 'csv', 'excel', 'pdf', 'print'],
-                language: {
-                    search: "_INPUT_",
-                    searchPlaceholder: "Search designers..."
-                }
+            // Simple search functionality
+            $('#searchInput').on('keyup', function() {
+                const searchText = $(this).val().toLowerCase();
+                $('.data-row').each(function() {
+                    const courseCode = $(this).find('.course-code').text().toLowerCase();
+                    if (courseCode.includes(searchText)) {
+                        $(this).show();
+                    } else {
+                        $(this).hide();
+                    }
+                });
             });
 
             // Modal Handling

@@ -1,4 +1,3 @@
-
 <?php
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
@@ -10,24 +9,47 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Add New Mapping
     if (isset($_POST['save_mapping_cos'])) {
         $course_code = $conn->real_escape_string($_POST['course_code']);
-        $po1 = $conn->real_escape_string($_POST['po1']);
-        $po2 = $conn->real_escape_string($_POST['po2']);
-        $po3 = $conn->real_escape_string($_POST['po3']);
-        $po4 = $conn->real_escape_string($_POST['po4']);
-        $po5 = $conn->real_escape_string($_POST['po5']);
-        $po6 = $conn->real_escape_string($_POST['po6']);
-        $po7 = $conn->real_escape_string($_POST['po7']);
+        $cos = $_POST['co'];
 
-        $sql = "INSERT INTO mapping_pos (course_code, po1, po2, po3, po4, po5, po6, po7)
-                VALUES ('$course_code', '$po1', '$po2', '$po3', '$po4', '$po5', '$po6', '$po7')";
+        // Convert all PO values to uppercase
+        foreach($cos as &$co) {
+            foreach($co as &$po_value) {
+                $po_value = strtoupper($po_value);
+            }
+        }
 
-        if ($conn->query($sql)) {
+        try {
+            $conn->autocommit(FALSE);
+            
+            foreach($cos as $co_num => $po_values) {
+                $co_number = $co_num + 1;
+                $stmt = $conn->prepare("INSERT INTO mapping_pos 
+                    (course_code, co_number, po1, po2, po3, po4, po5, po6, po7)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                
+                $stmt->bind_param("sisssssss", 
+                    $course_code,
+                    $co_number,
+                    $po_values['po1'],
+                    $po_values['po2'],
+                    $po_values['po3'],
+                    $po_values['po4'],
+                    $po_values['po5'],
+                    $po_values['po6'],
+                    $po_values['po7']
+                );
+                $stmt->execute();
+            }
+
+            $conn->commit();
             $_SESSION['message'] = "Mapping added successfully!";
             $_SESSION['message_type'] = "success";
-        } else {
-            $_SESSION['message'] = "Error: " . $conn->error;
+        } catch (Exception $e) {
+            $conn->rollback();
+            $_SESSION['message'] = "Error: " . $e->getMessage();
             $_SESSION['message_type'] = "error";
         }
+        
         header("Location: mapping_of_cos_with_pos.php");
         exit();
     }
@@ -35,24 +57,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Update Mapping
     if (isset($_POST['update_mapping_cos'])) {
         $id = intval($_POST['id']);
-        $po1 = $conn->real_escape_string($_POST['po1']);
-        $po2 = $conn->real_escape_string($_POST['po2']);
-        $po3 = $conn->real_escape_string($_POST['po3']);
-        $po4 = $conn->real_escape_string($_POST['po4']);
-        $po5 = $conn->real_escape_string($_POST['po5']);
-        $po6 = $conn->real_escape_string($_POST['po6']);
-        $po7 = $conn->real_escape_string($_POST['po7']);
+        $po1 = strtoupper($conn->real_escape_string($_POST['po1']));
+        $po2 = strtoupper($conn->real_escape_string($_POST['po2']));
+        $po3 = strtoupper($conn->real_escape_string($_POST['po3']));
+        $po4 = strtoupper($conn->real_escape_string($_POST['po4']));
+        $po5 = strtoupper($conn->real_escape_string($_POST['po5']));
+        $po6 = strtoupper($conn->real_escape_string($_POST['po6']));
+        $po7 = strtoupper($conn->real_escape_string($_POST['po7']));
 
-        $sql = "UPDATE mapping_pos SET 
-                po1='$po1', po2='$po2', po3='$po3', po4='$po4', 
-                po5='$po5', po6='$po6', po7='$po7' 
-                WHERE id=$id";
-
-        if ($conn->query($sql)) {
+        $stmt = $conn->prepare("UPDATE mapping_pos SET 
+                po1=?, po2=?, po3=?, po4=?, po5=?, po6=?, po7=?
+                WHERE id=?");
+        $stmt->bind_param("sssssssi", $po1, $po2, $po3, $po4, $po5, $po6, $po7, $id);
+        
+        if ($stmt->execute()) {
             $_SESSION['message'] = "Mapping updated successfully!";
             $_SESSION['message_type'] = "success";
         } else {
-            $_SESSION['message'] = "Error: " . $conn->error;
+            $_SESSION['message'] = "Error updating record: " . $stmt->error;
             $_SESSION['message_type'] = "error";
         }
         header("Location: mapping_of_cos_with_pos.php");
@@ -75,6 +97,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit();
     }
 }
+
+// Fetch all outcomes ordered by latest first
+$result = $conn->query("SELECT * FROM mapping_pos ORDER BY created_at DESC");
+$grouped_mappings = [];
+while ($row = $result->fetch_assoc()) {
+    $course_code = $row['course_code'];
+    if (!isset($grouped_mappings[$course_code])) {
+        $grouped_mappings[$course_code] = [];
+    }
+    array_unshift($grouped_mappings[$course_code], $row);
+}
 ?>
 
 <!DOCTYPE html>
@@ -85,460 +118,470 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <title>CO-PO Mapping</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
     <link rel="stylesheet" href="../public/css/sidebar.css">
-<style>
-    :root {
-    --primary-color: #4361ee;
-    --success-color: #06d6a0;
-    --danger-color: #ef476f;
-    --text-color: #2b2d42;
-    --background-color: #f8f9fa;
-    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    --border-radius: 8px;
-    --box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-}
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --success-color: #06d6a0;
+            --danger-color: #ef476f;
+            --text-color: #2b2d42;
+            --background-color: #f8f9fa;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
 
-/* Layout Styles */
-.content-area {
-    margin-left: 20.3%;
-    margin-right: 15%;
-    padding: 20px;
-    width: 71rem;
-    margin-top:8rem;
-}
+        body {
+            font-family: 'Poppins', sans-serif;
+            color: var(--text-color);
+            background-color: var(--background-color);
+            margin: 0;
+            padding: 0;
+        }
 
-.table-container {
-    border-radius: 12px;
-    overflow: hidden;
-    margin-top: 1.5rem;
-}
+        .content-area {
+            margin-left: 19vw;
+            padding: 2rem;
+        }
 
-/* Table Styles */
-table {
-    width: 100%;
-    padding: 2rem;
-    background: white;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    border-collapse: separate;
-    border-spacing: 0;
-    margin-bottom: 2rem;
-}
+        .search-container {
+            margin-bottom: 1rem;
+        }
 
-#mappingTable th,
-#mappingTable td {
-    padding: 12px 15px;
-    border-bottom: 1px solid #e9ecef;
-}
+        #searchInput {
+            padding: 0.8rem;
+            width: 300px;
+            border: 1px solid #e9ecef;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+        }
 
-#mappingTable th:not(:last-child)::after,
-#mappingTable td:not(:last-child)::after {
-    content: "";
-    position: absolute;
-    right: 0;
-    top: 50%;
-    transform: translateY(-50%);
-    height: 60%;
-    width: 1px;
-    background-color: #dee2e6;
-}
+        .add-btn {
+            background: var(--primary-color);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            margin-bottom: 1rem;
+            transition: var(--transition);
+        }
 
-/* Modal Styles */
-.modal {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0,0,0,0.5);
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-}
+        .add-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(67, 97, 238, 0.3);
+        }
 
-.modal-content {
-    background: white;
-    padding: 30px;
-    border-radius: var(--border-radius);
-    width: 60rem;
-    height: 33rem;
-    max-width: 90%;
-    box-shadow: var(--box-shadow);
-}
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border-radius: 0.5rem;
+            overflow: hidden;
+        }
 
-/* Form Styles */
-.form-row {
-    display: flex;
-    gap: 25px;
-    margin-bottom: 20px;
-}
+        th, td {
+            padding: 1rem;
+            border-bottom: 1px solid #e9ecef;
+            text-align: left;
+        }
 
-.form-column {
-    flex: 1;
-    margin-right: 1rem;
-}
+        th {
+            background-color: var(--primary-color);
+            color: white;
+        }
 
-.form-group {
-    margin-bottom: 15px;
-}
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            border: none;
+            cursor: pointer;
+            transition: var(--transition);
+            margin: 0 2px;
+        }
 
-.form-group label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: 500;
-    color: var(--text-color);
-}
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
 
-.form-group input {
-    width: 100%;
-    padding: 12px;
-    border: 2px solid #e9ecef;
-    border-radius: var(--border-radius);
-    font-size: 14px;
-    transition: var(--transition);
-}
+        .btn-danger {
+            background: var(--danger-color);
+            color: white;
+        }
 
-.form-group input:focus {
-    border-color: var(--primary-color);
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
-}
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.4);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
 
-/* Button Styles */
-.btn {
-    padding: 12px 24px;
-    border-radius: var(--border-radius);
-    font-weight: 600;
-    cursor: pointer;
-    transition: var(--transition);
-    border: none;
-    color: white;
-}
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 0.5rem;
+            width: 600px;
+            max-width: 95%;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding-bottom: 2rem;
+            
+        }
 
-.btn-success {
-    background: var(--primary-color);
-    color: white;
-    box-shadow: 0 2px 4px rgba(67, 97, 238, 0.2);
-}
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #e9ecef;
+        }
 
-.btn-success:hover {
-    background: #3650c7;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 6px rgba(67, 97, 238, 0.3);
-}
+        .close {
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #6c757d;
+            transition: var(--transition);
+        }
 
-.btn-primary {
-    background-color: var(--primary-color);
-}
+        .close:hover {
+            color: var(--text-color);
+            transform: rotate(90deg);
+        }
 
-.btn-danger {
-    background-color: var(--danger-color);
-}
+        .form-row {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
 
-/* DataTable Overrides */
-.dataTables_wrapper .dataTables_filter input {
-    padding: 0.5rem 1rem;
-    border: 2px solid #e9ecef;
-    border-radius: var(--border-radius);
-    transition: var(--transition);
-}
+        .form-column {
+            flex: 1;
+        }
 
-.dataTables_wrapper .dataTables_paginate .paginate_button {
-    border-radius: var(--border-radius) !important;
-    margin: 0 0.25rem;
-}
-/* Update your modal and form styles */
-.modal-content {
-    padding: 30px;
-    border-radius: 12px;
-}
+        .form-column label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
 
-.form-row {
-    gap: 25px;
-    margin-bottom: 20px;
-}
+        .form-column input {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #e9ecef;
+            border-radius: 0.5rem;
+            transition: var(--transition);
+        }
 
-.form-column label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: 500;
-    color: #2b2d42;
-}
-.close{
-    cursor: pointer;
-    font-size: 25px;
-}
+        .form-column input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+        }
 
-.form-column input {
-    width: 100%;
-    padding: 12px;
-    border: 2px solid #e9ecef;
-    border-radius: 8px;
-    transition: all 0.3s ease;
-}
+        .co-section {
+            border: 1px solid #e9ecef;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            background: #f8f9fa;
+            position: relative;
+        }
+        .co-section {
+            margin-bottom: 1rem; 
+        }
 
-.form-column input:focus {
-    border-color: #4361ee;
-    box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
-}
+        #co-sections {
+            max-height: 60vh;
+            overflow-y: auto;
+            padding-right: 0.5rem; /* Add scrollbar space */
+        }
 
-.btn-success {
-    padding: 12px 24px;
-    border-radius: 8px;
-    font-weight: 600;
-}
+        .remove-co-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: var(--danger-color);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
 
-/* Responsive Design */
-@media (max-width: 768px) {
-    .content-area {
-        margin-left: 2vw;
-        margin-right: 2vw;
-        width: 96%;
-    }
+        .alert {
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+        }
 
-    .modal-content {
-        padding: 20px;
-        height: auto;
-    }
+        .alert-success {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
 
-    .form-row {
-        flex-direction: column;
-        gap: 15px;
-    }
-}
-</style>
+        .alert-error {
+            background-color: #fee2e2;
+            color: #b91c1c;
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <?php include('../sidebar.php'); ?>
+    <?php include('../sidebar.php'); ?>
+    <div class="content-area">
+        
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="Search by course code...">
+        </div>
+        <button class="add-btn" onclick="openModal()">Add New Mapping</button>
 
-        <div class="content-area">
-            <button id="addNewBtn" class="btn btn-success">Add Mapping</button>
+        <?php if(isset($_SESSION['message'])): ?>
+            <div class="alert alert-<?= $_SESSION['message_type'] ?>">
+                <?= $_SESSION['message'] ?>
+            </div>
+            <?php 
+            unset($_SESSION['message']);
+            unset($_SESSION['message_type']);
+            endif; ?>
 
-            <?php if(isset($_SESSION['message'])): ?>
-                <div class="alert alert-<?= $_SESSION['message_type'] ?> mt-3">
-                    <?= $_SESSION['message'] ?>
-                </div>
-                <?php 
-                unset($_SESSION['message']);
-                unset($_SESSION['message_type']);
-                endif; ?>
-
-            <div class="table-container mt-3">
-                <table id="mappingTable" class="table table-striped" style="width:100%">
-                    <thead>
-                        <tr>
-                            <th>Course Code</th>
-                            <th>PO1</th>
-                            <th>PO2</th>
-                            <th>PO3</th>
-                            <th>PO4</th>
-                            <th>PO5</th>
-                            <th>PO6</th>
-                            <th>PO7</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php
-                        $result = $conn->query("SELECT * FROM mapping_pos");
-                        while($row = $result->fetch_assoc()): ?>
+        <table>
+            <thead>
+                <tr>
+                    <th>Course Code</th>
+                    <th>CO</th>
+                    <th>PO1</th>
+                    <th>PO2</th>
+                    <th>PO3</th>
+                    <th>PO4</th>
+                    <th>PO5</th>
+                    <th>PO6</th>
+                    <th>PO7</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($grouped_mappings as $course_code => $mappings): ?>
+                    <tbody class="course-group" data-course-code="<?= htmlspecialchars($course_code) ?>">
+                        <?php foreach ($mappings as $index => $mapping): ?>
                             <tr>
-                                <td><?= htmlspecialchars($row['course_code']) ?></td>
-                                <td><?= htmlspecialchars($row['po1']) ?></td>
-                                <td><?= htmlspecialchars($row['po2']) ?></td>
-                                <td><?= htmlspecialchars($row['po3']) ?></td>
-                                <td><?= htmlspecialchars($row['po4']) ?></td>
-                                <td><?= htmlspecialchars($row['po5']) ?></td>
-                                <td><?= htmlspecialchars($row['po6']) ?></td>
-                                <td><?= htmlspecialchars($row['po7']) ?></td>
+                                <?php if ($index === 0): ?>
+                                    <td rowspan="<?= count($mappings) ?>"><?= htmlspecialchars($course_code) ?></td>
+                                <?php endif; ?>
+                                <td>CO<?= $mapping['co_number'] ?></td>
+                                <td><?= htmlspecialchars($mapping['po1']) ?></td>
+                                <td><?= htmlspecialchars($mapping['po2']) ?></td>
+                                <td><?= htmlspecialchars($mapping['po3']) ?></td>
+                                <td><?= htmlspecialchars($mapping['po4']) ?></td>
+                                <td><?= htmlspecialchars($mapping['po5']) ?></td>
+                                <td><?= htmlspecialchars($mapping['po6']) ?></td>
+                                <td><?= htmlspecialchars($mapping['po7']) ?></td>
                                 <td>
-                                    <button class="btn btn-sm btn-primary editBtn" 
-                                        data-id="<?= $row['id'] ?>"
-                                        data-code="<?= $row['course_code'] ?>"
-                                        data-po1="<?= $row['po1'] ?>"
-                                        data-po2="<?= $row['po2'] ?>"
-                                        data-po3="<?= $row['po3'] ?>"
-                                        data-po4="<?= $row['po4'] ?>"
-                                        data-po5="<?= $row['po5'] ?>"
-                                        data-po6="<?= $row['po6'] ?>"
-                                        data-po7="<?= $row['po7'] ?>">
+                                    <button class="btn btn-primary" onclick="openEditModal(
+                                        '<?= $mapping['id'] ?>',
+                                        '<?= $mapping['po1'] ?>',
+                                        '<?= $mapping['po2'] ?>',
+                                        '<?= $mapping['po3'] ?>',
+                                        '<?= $mapping['po4'] ?>',
+                                        '<?= $mapping['po5'] ?>',
+                                        '<?= $mapping['po6'] ?>',
+                                        '<?= $mapping['po7'] ?>'
+                                    )">
                                         <i class="fas fa-edit"></i> Edit
                                     </button>
-                                    <button class="btn btn-sm btn-danger deleteBtn" data-id="<?= $row['id'] ?>">
-                                        <i class="fas fa-trash"></i> Delete
-                                    </button>
+                                    <form method="POST" style="display:inline;">
+                                        <input type="hidden" name="id" value="<?= $mapping['id'] ?>">
+                                        <button type="submit" name="delete_mapping_pos" class="btn btn-danger">
+                                            <i class="fas fa-trash"></i> Delete
+                                        </button>
+                                    </form>
                                 </td>
                             </tr>
-                        <?php endwhile; ?>
+                        <?php endforeach; ?>
                     </tbody>
-                </table>
-            </div>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
 
-            <!-- Add Modal -->
-            <div id="addNewModal" class="modal">
-                <div class="modal-content">
+        <!-- Add Modal -->
+        <div id="addNewModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Add CO-PO Mapping</h2>
                     <span class="close">&times;</span>
-                    <h2>Add CO-PO Mapping</h2><br>
-                    <form method="POST">
-                        <div class="form-row">
-                            <div class="form-column">
-                                <label for="course_code">Course Code</label>
-                                <input type="text" name="course_code" required>
-                            </div>
-                            <div class="form-column">
-                                <label for="po1">PO1</label>
-                                <input type="text" name="po1" class="restricted-input" required>
-                            </div>
-                            <div class="form-column">
-                                <label for="po2">PO2</label>
-                                <input type="text" name="po2" class="restricted-input" required>
-                            </div>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-column">
-                                <label for="po3">PO3</label>
-                                <input type="text" name="po3" class="restricted-input" required>
-                            </div>
-                            <div class="form-column">
-                                <label for="po4">PO4</label>
-                                <input type="text" name="po4" class="restricted-input" required>
-                            </div>
-                            <div class="form-column">
-                                <label for="po5">PO5</label>
-                                <input type="text" name="po5" class="restricted-input" required>
-                            </div>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-column">
-                                <label for="po6">PO6</label>
-                                <input type="text" name="po6" class="restricted-input" required>
-                            </div>
-                            <div class="form-column">
-                                <label for="po7">PO7</label>
-                                <input type="text" name="po7" class="restricted-input" required>
-                            </div>
-                        </div><br><br>
-                        <button type="submit" name="save_mapping_cos" class="btn btn-success mt-3">Save Mapping</button>
-                    </form>
                 </div>
-            </div>
+                <form method="POST">
+                    <div class="form-row">
+                        <div class="form-column">
+                            <label>Course Code</label>
+                            <input type="text" name="course_code" required>
+                        </div>
+                    </div>
 
-            <!-- Edit Modal -->
-            <div id="editModal" class="modal">
-                <div class="modal-content">
-                    <span class="close">&times;</span>
+                    <div id="co-sections">
+                        <div class="co-section">
+                            <button type="button" class="remove-co-btn" onclick="removeCOSection(this)">&times;</button>
+                            <h3>CO1</h3>
+                            <div class="form-row">
+                                <?php foreach (range(1, 7) as $po): ?>
+                                <div class="form-column">
+                                    <label>PO<?= $po ?></label>
+                                    <input type="text" name="co[0][po<?= $po ?>]" 
+                                           class="restricted-input" 
+                                           maxlength="1" 
+                                           pattern="[SMLsml]" 
+                                           title="Only S, M, or L (case insensitive)"
+                                           required>
+                                </div>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <button type="button" id="add-co-btn" class="btn btn-primary">Add CO</button>
+                        <button type="submit" name="save_mapping_cos" class="btn btn-success">Save Mapping</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Edit Modal -->
+        <div id="editModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
                     <h2>Edit CO-PO Mapping</h2>
-                    <form method="POST">
-                        <input type="hidden" name="id" id="edit_id">
-                        <div class="form-row">
-                            <div class="form-column">
-                                <label for="edit_course_code">Course Code</label>
-                                <input type="text" id="edit_course_code" name="course_code" disabled>
-                            </div>
-                            <div class="form-column">
-                                <label for="edit_po1">PO1</label>
-                                <input type="text" id="edit_po1" name="po1" class="restricted-input" required>
-                            </div>
-                            <div class="form-column">
-                                <label for="edit_po2">PO2</label>
-                                <input type="text" id="edit_po2" name="po2" class="restricted-input" required>
-                            </div>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-column">
-                                <label for="edit_po3">PO3</label>
-                                <input type="text" id="edit_po3" name="po3" class="restricted-input" required>
-                            </div>
-                            <div class="form-column">
-                                <label for="edit_po4">PO4</label>
-                                <input type="text" id="edit_po4" name="po4" class="restricted-input" required>
-                            </div>
-                            <div class="form-column">
-                                <label for="edit_po5">PO5</label>
-                                <input type="text" id="edit_po5" name="po5" class="restricted-input" required>
-                            </div>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-column">
-                                <label for="edit_po6">PO6</label>
-                                <input type="text" id="edit_po6" name="po6" class="restricted-input" required>
-                            </div>
-                            <div class="form-column">
-                                <label for="edit_po7">PO7</label>
-                                <input type="text" id="edit_po7" name="po7" class="restricted-input" required>
-                            </div>
-                        </div>
-                        <button type="submit" name="update_mapping_cos" class="btn btn-success mt-3">Update Mapping</button>
-                    </form>
+                    <span class="close">&times;</span>
                 </div>
+                <form method="POST">
+                    <input type="hidden" name="id" id="edit_id">
+                    <div class="form-row">
+                        <?php foreach (range(1, 7) as $po): ?>
+                        <div class="form-column">
+                            <label>PO<?= $po ?></label>
+                            <input type="text" id="edit_po<?= $po ?>" name="po<?= $po ?>" 
+                                   class="restricted-input" 
+                                   maxlength="1" 
+                                   pattern="[SMLsml]" 
+                                   title="Only S, M, or L (case insensitive)"
+                                   required>
+                        </div>
+                        <?php endforeach; ?>
+                    </div>
+                    <button type="submit" name="update_mapping_cos" class="btn btn-success">Update Mapping</button>
+                </form>
             </div>
         </div>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script>
-        $(document).ready(function() {
-            // Initialize DataTable
-            $('#mappingTable').DataTable({
-                dom: '<"top"f>rt<"bottom"lip>',
-                responsive: true
-            });
+        let coCount = 0;
+        const maxCO = 5;
 
-            // Modal Handling
-            const addModal = $('#addNewModal');
-            const editModal = $('#editModal');
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('input', function() {
+            const searchTerm = this.value.trim().toUpperCase();
+            const groups = document.querySelectorAll('.course-group');
             
-            $('#addNewBtn').click(() => addModal.css('display', 'flex'));
-            $('.close').click(() => {
-                addModal.css('display', 'none');
-                editModal.css('display', 'none');
+            groups.forEach(group => {
+                const courseCode = group.getAttribute('data-course-code').toUpperCase();
+                group.style.display = courseCode.includes(searchTerm) ? '' : 'none';
             });
+        });
 
-            $(window).click((e) => {
-                if (e.target === addModal[0]) addModal.css('display', 'none');
-                if (e.target === editModal[0]) editModal.css('display', 'none');
+        // Modal Handling
+        function openModal() {
+            document.getElementById('addNewModal').style.display = 'flex';
+        }
+
+        function openEditModal(id, ...pos) {
+            document.getElementById('edit_id').value = id;
+            pos.forEach((value, index) => {
+                document.getElementById(`edit_po${index + 1}`).value = value;
             });
+            document.getElementById('editModal').style.display = 'flex';
+        }
 
-            // Input Validation
-            $('.restricted-input').on('input', function() {
-                let value = $(this).val().toUpperCase();
-                value = value.replace(/[^SML]/g, ''); // Updated regex
-                $(this).val(value);
+        document.querySelectorAll('.close').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.modal').forEach(modal => {
+                    modal.style.display = 'none';
+                });
             });
+        });
 
-            // Edit Button Handling
-            $('.editBtn').click(function() {
-                const data = $(this).data();
-                $('#edit_id').val(data.id);
-                $('#edit_course_code').val(data.code);
-                $('#edit_po1').val(data.po1);
-                $('#edit_po2').val(data.po2);
-                $('#edit_po3').val(data.po3);
-                $('#edit_po4').val(data.po4);
-                $('#edit_po5').val(data.po5);
-                $('#edit_po6').val(data.po6);
-                $('#edit_po7').val(data.po7);
-                editModal.css('display', 'flex');
-            });
+        window.addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal')) {
+                document.querySelectorAll('.modal').forEach(modal => {
+                    modal.style.display = 'none';
+                });
+            }
+        });
 
-            // Delete Button Handling
-            $('.deleteBtn').click(function() {
-                if (confirm('Are you sure you want to delete this mapping?')) {
-                    const id = $(this).data('id');
-                    $.post('mapping_of_cos_with_pos.php', {
-                        delete_mapping_pos: true,
-                        id: id
-                    }, function() {
-                        location.reload();
+        // CO Section Management
+        document.getElementById('add-co-btn').addEventListener('click', function() {
+            if (coCount < maxCO - 1) {
+                coCount++;
+                const container = document.getElementById('co-sections');
+                const newSection = document.createElement('div');
+                newSection.className = 'co-section';
+                newSection.innerHTML = `
+                    <button type="button" class="remove-co-btn" onclick="removeCOSection(this)">&times;</button>
+                    <h3>CO${coCount + 1}</h3>
+                    <div class="form-row">
+                        ${Array.from({length: 7}, (_, i) => `
+                        <div class="form-column">
+                            <label>PO${i + 1}</label>
+                            <input type="text" name="co[${coCount}][po${i + 1}]" 
+                                   class="restricted-input" 
+                                   maxlength="1" 
+                                   pattern="[SMLsml]" 
+                                   title="Only S, M, or L (case insensitive)"
+                                   required>
+                        </div>`).join('')}
+                    </div>
+                `;
+                container.appendChild(newSection);
+            } else {
+                alert('Maximum of 5 COs allowed');
+            }
+        });
+
+        function removeCOSection(btn) {
+            const sections = document.getElementById('co-sections');
+            if (sections.children.length > 1) {
+                const section = btn.closest('.co-section');
+                section.remove();
+                Array.from(sections.children).forEach((sec, index) => {
+                    sec.querySelector('h3').textContent = `CO${index + 1}`;
+                    sec.querySelectorAll('input').forEach(input => {
+                        input.name = input.name.replace(/\[\d+\]/g, `[${index}]`);
                     });
+                });
+                coCount = sections.children.length - 1;
+            }
+        }
+
+        // Input Validation - Auto uppercase and restrict to S/M/L
+        document.addEventListener('input', function(e) {
+            if (e.target.classList.contains('restricted-input')) {
+                // Convert to uppercase
+                e.target.value = e.target.value.toUpperCase();
+                
+                // Only allow S, M, or L
+                if (!/^[SML]?$/.test(e.target.value)) {
+                    e.target.value = e.target.value.replace(/[^SML]/g, '');
                 }
-            });
+            }
         });
     </script>
 </body>
 </html>
-
-

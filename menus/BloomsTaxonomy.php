@@ -91,9 +91,20 @@ $result = $conn->query("SELECT * FROM bloomy");
     <style>
         
         .table-container {
-            margin-top: 1rem;
+            
             max-width: 74vw;
             overflow-x: auto;
+            margin-top: 32px !important;
+        }
+        table {
+            width: 100%;
+            padding: 2rem;
+            background: white;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-bottom: 2rem;
+            margin-top:2rem;
         }
 
 
@@ -103,6 +114,10 @@ $result = $conn->query("SELECT * FROM bloomy");
                 font-size: 25px;
                 font-weight: bolder;
                 cursor: pointer;
+            }
+
+            i{
+                margin-right:4px;
             }
 
             .popupclose{
@@ -127,6 +142,10 @@ $result = $conn->query("SELECT * FROM bloomy");
         thead {
             background-color: #4361ee;
             color: #f8f9fa;
+            }
+            .btn.btn-sm.btn-action.edit-btn {
+                background-color: #4361ee;
+                color: white;
             }
         :root {
             --primary-color: #4361ee;
@@ -185,11 +204,6 @@ $result = $conn->query("SELECT * FROM bloomy");
             transform: translateY(0);
         }
 
-        @keyframes float {
-            0%, 100% { transform: translateY(-2px); }
-            50% { transform: translateY(2px); }
-        }
-
         .btn-action {
             transition: var(--transition) !important;
             transform: scale(1);
@@ -221,7 +235,7 @@ $result = $conn->query("SELECT * FROM bloomy");
                         <?php unset($_SESSION['message']); ?>
                     </div>
                 <?php endif; ?>
-
+                    <br>
                 <div class="table-container">
                     <table id="dataTable" class="table table-striped table-hover">
                         <thead class="">
@@ -243,18 +257,18 @@ $result = $conn->query("SELECT * FROM bloomy");
                                     <td><?= htmlspecialchars($row['ca_second']) ?></td>
                                     <td><?= htmlspecialchars($row['end_of_semester']) ?></td>
                                     <td>
-                                        <button class="btn btn-sm btn-warning btn-action edit-btn" 
+                                        <button class="btn btn-sm  btn-action edit-btn" 
                                             data-id="<?= $row['id'] ?>"
                                             data-code="<?= $row['course_code'] ?>"
                                             data-blooms="<?= $row['blooms_taxonomy'] ?>"
                                             data-ca1="<?= $row['ca_first'] ?>"
                                             data-ca2="<?= $row['ca_second'] ?>"
                                             data-end="<?= $row['end_of_semester'] ?>">
-                                            <i class="fas fa-edit"></i>
+                                            <i class="fas fa-edit"></i>Edit
                                         </button>
                                         <button class="btn btn-sm btn-danger btn-action delete-btn" 
                                             data-id="<?= $row['id'] ?>">
-                                            <i class="fas fa-trash"></i>
+                                            <i class="fas fa-trash"></i>Delete
                                         </button>
                                     </td>
                                 </tr>

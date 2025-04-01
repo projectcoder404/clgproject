@@ -7,7 +7,7 @@ use Dompdf\Dompdf;
 use Dompdf\Options;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['course_codes'])) {
-    $courseCodes = explode(',', trim($_POST['course_codes']));
+    $courseCodes = is_array($_POST['course_codes']) ? $_POST['course_codes'] : explode(',', $_POST['course_codes']);
     $html = '';
 
     foreach ($courseCodes as $code) {
@@ -55,57 +55,54 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['course_codes'])) {
                 </p>
               </div><br>';
 
-
-              $html .= '<h3 style="text-align: center; font-size: 16px; font-weight: bold;">'.$course['course_code'].'</h3>';
+            $html .= '<h3 style="text-align: center; font-size: 16px; font-weight: bold;">'.$course['course_code'].'</h3>';
     
-              $html .= '<table border="1" cellspacing="0" cellpadding="8" style="width: 100%; border-collapse: collapse; font-size: 14px;">
-                          <tr style="background-color: #f2f2f2; text-align: center; font-weight: bold;">
-                              <th>Course Code</th>
-                              <th>Course Title</th>
-                              <th>Category</th>
-                              <th>Lecture</th>
-                              <th>Tutorial</th>
-                              <th>Practical</th>
-                              <th>Credit</th>
-                          </tr>
-                          <tr>
-                              <td>'.$course['course_code'].'</td>
-                              <td>'.$course['course_title'].'</td>
-                              <td>'.$course['category'].'</td>
-                              <td>'.$course['l'].'</td>
-                              <td>'.$course['t'].'</td>
-                              <td>'.$course['p'].'</td>
-                              <td>'.$course['credit'].'</td>
-                          </tr>
-                        </table><br>';
+            $html .= '<table border="1" cellspacing="0" cellpadding="8" style="width: 100%; border-collapse: collapse; font-size: 14px;">
+                      <tr style="background-color: #f2f2f2; text-align: center; font-weight: bold;">
+                          <th>Course Code</th>
+                          <th>Course Title</th>
+                          <th>Category</th>
+                          <th>Lecture</th>
+                          <th>Tutorial</th>
+                          <th>Practical</th>
+                          <th>Credit</th>
+                      </tr>
+                      <tr>
+                          <td>'.$course['course_code'].'</td>
+                          <td>'.$course['course_title'].'</td>
+                          <td>'.$course['category'].'</td>
+                          <td>'.$course['l'].'</td>
+                          <td>'.$course['t'].'</td>
+                          <td>'.$course['p'].'</td>
+                          <td>'.$course['credit'].'</td>
+                      </tr>
+                    </table><br>';
       
-              // Marks Table
-              $html .= '<table border="1" cellspacing="0" cellpadding="5" style="width: 100%; border-collapse: collapse;">
-                          <tr>
-                              <th>Year</th>
-                              <th>Semester</th>
-                              <th>Internal Marks (CIA)</th>
-                              <th>External Marks (ESE)</th>
-                              <th>Total Marks</th>
-                          </tr>
-                          <tr>
-                              <td>'.$course['year'].'</td>
-                              <td>'.$course['semester'].'</td>
-                              <td>'.$course['internal'].'</td>
-                              <td>'.$course['external'].'</td>
-                              <td>'.$course['total'].'</td>
-                          </tr>
-                        </table><br>';
+            // Marks Table
+            $html .= '<table border="1" cellspacing="0" cellpadding="5" style="width: 100%; border-collapse: collapse;">
+                      <tr>
+                          <th>Year</th>
+                          <th>Semester</th>
+                          <th>Internal Marks (CIA)</th>
+                          <th>External Marks (ESE)</th>
+                          <th>Total Marks</th>
+                      </tr>
+                      <tr>
+                          <td>'.$course['year'].'</td>
+                          <td>'.$course['semester'].'</td>
+                          <td>'.$course['internal'].'</td>
+                          <td>'.$course['external'].'</td>
+                          <td>'.$course['total'].'</td>
+                      </tr>
+                    </table><br>';
   
-              // Preamble
-              $preamble_text = $preamble['preamble'] ?? "No preamble available.";
-              $html .= "<h4>Preamble</h4><p>{$preamble_text}</p>";
+            // Preamble
+            $preamble_text = $preamble['preamble'] ?? "No preamble available.";
+            $html .= "<h4>Preamble</h4><p>{$preamble_text}</p>";
   
-              // Pre-requisite
-              $pre_requisite_text = $pre_requisite['pre_requisite'] ?? "No pre-requisite available.";
-              $html .= "<h4>Pre-requisite</h4><p>{$pre_requisite_text}</p>";
-
-
+            // Pre-requisite
+            $pre_requisite_text = $pre_requisite['pre_requisite'] ?? "No pre-requisite available.";
+            $html .= "<h4>Pre-requisite</h4><p>{$pre_requisite_text}</p>";
 
             // Course Outcomes Table
             $html .= '<h4 style="text-align: center;">Course Outcomes (COs)</h4>
@@ -223,30 +220,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['course_codes'])) {
                 foreach ($content as $unit) {
                     $html .= '<div style="margin-bottom: 15px;">
                                 <div style="display: flex; justify-content: space-between; font-weight: bold;">
-                                    <span style="float:left;">UNIT '.$unit['unit'].'</span>
-                                    <span style="float:right;">'.$unit['hour'].' Hours</span>
+                                    <span>UNIT '.$unit['unit'].'</span>
+                                    <span>'.$unit['hour'].' Hours</span>
                                 </div>
-                                <div style="margin-top: 27px; margin-left: 10px;">
+                                <div style="margin-top: 5px; margin-left: 10px;">
                                     '.$unit['content'].'
                                 </div>
                               </div>';
                 }
             }
 
-            // Text Book
+            // Text Books
             $textbooks = $conn->query("SELECT text_book FROM text_book WHERE course_code = '$code'")->fetch_all(MYSQLI_ASSOC);
             if (!empty($textbooks)) {
-                $html .= '<h4 style="margin-top: 120px;">Text Books</h4>';
+                $html .= '<h4 style="margin-top: 20px;">Text Books</h4>';
                 $html .= '<ol style="margin-left: 20px; padding-left: 0;">';
                 
                 foreach ($textbooks as $book) {
-                    $html .= '<li style="margin-bottom: 8px;margin-left: 20px;">' . htmlspecialchars($book['text_book']) . '</li>';
+                    $html .= '<li style="margin-bottom: 8px;">' . htmlspecialchars($book['text_book']) . '</li>';
                 }
                 
                 $html .= '</ol><br>';
             }
 
-            // chapters
+            // Chapter References
             $chapters = $conn->query("SELECT unit, chapter, book FROM chapter WHERE course_code = '$code' ORDER BY unit")->fetch_all(MYSQLI_ASSOC);
             if (!empty($chapters)) {
                 $html .= '<h4 style="margin-top: 20px;">Chapter References</h4>';
@@ -279,9 +276,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['course_codes'])) {
                 $html .= '<br>';
             }
 
-            // Add Reference Books section after Chapters
+            // Reference Books
             $referenceBooks = $conn->query("SELECT reference_book FROM reference_book WHERE course_code = '$code'")->fetch_all(MYSQLI_ASSOC);
-
             if (!empty($referenceBooks)) {
                 $html .= '<h4 style="margin-top: 20px;">Reference Books</h4>';
                 $html .= '<ol style="margin-left: 20px; padding-left: 0;">';
@@ -293,16 +289,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['course_codes'])) {
                 $html .= '</ol><br>';
             }
 
-            // Add Web Resources section after Reference Books
+            // Web Resources
             $webResources = $conn->query("SELECT web_resources FROM web_resources WHERE course_code = '$code'")->fetch_all(MYSQLI_ASSOC);
-
             if (!empty($webResources)) {
                 $html .= '<h4 style="margin-top: 20px;">Web Resources</h4>';
                 $html .= '<ul style="margin-left: 20px; padding-left: 0; list-style-type: none;">';
                 
                 foreach ($webResources as $resource) {
                     $url = $resource['web_resources'];
-                    // Check if the text already contains a URL pattern
                     if (preg_match('/https?:\/\//i', $url)) {
                         $displayText = parse_url($url, PHP_URL_HOST) ?: $url;
                         $html .= '<li style="margin-bottom: 8px;">';
@@ -318,15 +312,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['course_codes'])) {
                 $html .= '</ul><br>';
             }
 
-              // Add Course Designer section after Web Resources
-              $designer = $conn->query("SELECT course_designer FROM course_designer WHERE course_code = '$code' LIMIT 1")->fetch_assoc();
-            
-              if (!empty($designer)) {
-                  $html .= '<h4 style="margin-top: 20px;">Course Designer</h4>';
-                  $html .= '<div style="margin-left: 20px; margin-bottom: 20px;">';
-                  $html .= '<p style="margin-top: -5px">,<b>' . htmlspecialchars($designer['course_designer']) . '</b></p>';
-                  $html .= '</div>';
-              }
+            // Course Designer
+            $designer = $conn->query("SELECT course_designer FROM course_designer WHERE course_code = '$code' LIMIT 1")->fetch_assoc();
+            if (!empty($designer)) {
+                $html .= '<h4 style="margin-top: 20px;">Course Designer</h4>';
+                $html .= '<div style="margin-left: 20px; margin-bottom: 20px;">';
+                $html .= '<p style="margin-top: -5px">,<b>' . htmlspecialchars($designer['course_designer']) . '</b></p>';
+                $html .= '</div>';
+            }
+
+            // Add page break between courses if multiple are selected
+            if (count($courseCodes) > 1) {
+                $html .= '<div style="page-break-after: always;"></div>';
+            }
         }
     }
 
@@ -338,72 +336,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['course_codes'])) {
         $dompdf->setPaper('A4', 'portrait');
         $dompdf->render();
         ob_end_clean();
-        $dompdf->stream("course-report.pdf", ["Attachment" => false]);
+        $dompdf->stream("course-report.pdf", ["Attachment" => true]);
         exit;
     } else {
-        $_SESSION['message'] = "No valid courses found.";
+        $_SESSION['message'] = "No valid courses selected for PDF generation.";
+        $_SESSION['message_type'] = "error";
+        header("Location: Dashboard.php");
+        exit;
     }
+} else {
+    header("Location: Dashboard.php");
+    exit;
 }
 ?>
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Generate Course PDF</title>
-    <link rel="stylesheet" href="../public/css/sidebar.css">
-    <style>
-        .content-area {
-            margin-left: 20.3%;
-            padding: 2rem;
-            font-family: Arial, sans-serif;
-        }
-        #pdfForm {
-            background: #fff;
-            padding: 2rem;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        input[type="text"] {
-            padding: 8px;
-            width: 300px;
-            margin-right: 10px;
-        }
-        button {
-            padding: 8px 20px;
-            background: #4361ee;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        .alert {
-            padding: 10px;
-            margin-top: 15px;
-            border-radius: 4px;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <?php include('../sidebar.php'); ?>
-        <div class="content-area">
-            <h1>Course PDF Generator</h1>
-            <form id="pdfForm" method="POST">
-                <label for="course-code">Enter Course Code(s):</label>
-                <input type="text" name="course_codes" id="course-code" 
-                       placeholder="Separate multiple codes with commas" required>
-                <button type="submit">Generate PDF</button>
-            </form>
-
-            <?php if (isset($_SESSION['message'])): ?>
-                <div class="alert">
-                    <?= $_SESSION['message'] ?>
-                    <?php unset($_SESSION['message']); ?>
-                </div>
-            <?php endif; ?>
-        </div>
-    </div>
-</body>
-</html>

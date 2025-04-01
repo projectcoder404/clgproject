@@ -50,6 +50,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $result = $conn->query("SELECT * FROM department");
+
+
 ?>
 
 <!DOCTYPE html>
@@ -63,7 +65,7 @@ $result = $conn->query("SELECT * FROM department");
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="../public/css/sidebar.css">
     <style>
-        .table-container { margin-top: 1rem; max-width: 74vw; overflow-x: auto; }
+        .table-container { margin-top: 1rem; max-width: 54vw; overflow-x: auto; }
         .close { margin-left: 95%; font-size: 25px; font-weight: bolder; cursor: pointer; }
         .popupclose { margin-left: 65%; font-size: 25px; font-weight: bolder; cursor: pointer; }
         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
@@ -111,6 +113,9 @@ $result = $conn->query("SELECT * FROM department");
         .modal.active {
             display: flex;
             opacity: 1;
+        }
+        i{
+            margin-right:4px;
         }
         .modal-content {
             background: white;
@@ -181,11 +186,11 @@ $result = $conn->query("SELECT * FROM department");
                                             data-code="<?= $row['course_code'] ?>"
                                             data-department="<?= $row['department'] ?>"
                                             data-content="<?= $row['content'] ?>">
-                                            <i class="fas fa-edit"></i>
+                                            <i class="fas fa-edit"></i>Edit
                                         </button>
                                         <button class="btn btn-sm btn-danger btn-action delete-btn" 
                                             data-id="<?= $row['id'] ?>">
-                                            <i class="fas fa-trash"></i>
+                                            <i class="fas fa-trash"></i>Delete
                                         </button>
                                     </td>
                                 </tr>
